@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line Tracer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #ffffff;
+    color: #1a1a2e;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: background 0.07s linear;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #3a3a5c;
+    margin-bottom: 5px;
+  }
+
+  #subtitle {
+    font-size: 0.75rem;
+    color: #9090b0;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  /* ── Mode buttons ── */
+  #mode-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .mode-btn {
+    background: #f3f3fa;
+    border: 1.5px solid #d0d0e8;
+    color: #5050a0;
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .mode-btn:hover { background: #e8e8f8; border-color: #a0a0d8; }
+  .mode-btn.active {
+    background: #4a36c0;
+    border-color: #4a36c0;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(74,54,192,0.28);
+  }
+
+  #mode-desc {
+    font-size: 0.72rem;
+    color: #8888b0;
+    letter-spacing: 0.04em;
+    margin-bottom: 12px;
+    min-height: 1.1em;
+  }
+
+  /* ── Canvas wrapper ── */
+  #canvas-wrap {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 28px rgba(0,0,0,0.10), 0 0 0 1.5px rgba(0,0,0,0.07);
+  }
+
+  canvas {
+    display: block;
+    cursor: crosshair;
+  }
+
+  /* ── Mode badge (top-left of canvas) ── */
+  #mode-badge {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 5px;
+    pointer-events: none;
+  }
+
+  /* ── Live offset (Numerical mode) ── */
+  #live-offset {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0;
+    text-align: right;
+    transition: color 0.07s;
+  }
+  #live-num {
+    font-size: 3.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  #live-unit {
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.55;
+    margin-left: 2px;
+  }
+  #live-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.45;
+    margin-top: 2px;
+  }
+
+  /* ── Instruction overlay ── */
+  #instruction {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: rgba(60,60,120,0.4);
+    pointer-events: none;
+    text-align: center;
+    line-height: 2;
+    transition: opacity 0.3s;
+  }
+
+  /* ── Score popup ── */
+  #score-popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #score-popup .grade {
+    font-size: 5.5rem;
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: 0 2px 18px rgba(0,0,0,0.14);
+  }
+  #score-popup .grade-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  /* ── Bottom stats ── */
+  #ui {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    width: 100%;
+    max-width: 720px;
+    justify-content: space-between;
+  }
+
+  .stat-box {
+    background: #f7f7fd;
+    border: 1.5px solid #e2e2f0;
+    border-radius: 10px;
+    padding: 8px 14px;
+    text-align: center;
+    flex: 1;
+  }
+  .stat-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9090b8;
+    margin-bottom: 3px;
+  }
+  .stat-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #5050a0;
+  }
+  .stat-value.good { color: #18a050; }
+  .stat-value.bad  { color: #c83030; }
+  .stat-value.meh  { color: #b07010; }
+
+  #btn-row { display: flex; gap: 8px; }
+
+  button.action-btn {
+    background: #f3f3fa;
+    border: 1.5px solid #d0d0e8;
+    color: #5050a0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  button.action-btn:hover { background: #e8e8f8; border-color: #a0a0d8; }
+  button.action-btn:disabled { opacity: 0.3; cursor: default; }
+</style>
+</head>
+<body>
+
+<h1>Line Tracer</h1>
+<div id="subtitle">Follow the curve as precisely as you can</div>
+
+<div id="mode-row">
+  <button class="mode-btn" data-mode="no-feedback">No Feedback</button>
+  <button class="mode-btn active" data-mode="numerical">Numerical</button>
+  <button class="mode-btn" data-mode="spatial-color">Spatial-Color</button>
+</div>
+<div id="mode-desc">Shows your pixel distance from the line in real time</div>
+
+<div id="canvas-wrap">
+  <canvas id="c" width="720" height="380"></canvas>
+  <div id="mode-badge"></div>
+
+  <!-- Numerical mode: live pixel readout -->
+  <div id="live-offset">
+    <div id="live-num">0</div>
+    <span id="live-unit">px off</span>
+    <div id="live-label">from line</div>
+  </div>
+
+  <div id="instruction">Click the <span style="color:#4a36c0;font-weight:700">● start point</span> to begin tracing</div>
+
+  <div id="score-popup">
+    <div class="grade" id="grade-letter">A</div>
+    <div class="grade-label" id="grade-label">Excellent!</div>
+  </div>
+</div>
+
+<div id="ui">
+  <div class="stat-box">
+    <div class="stat-label">Avg. Offset</div>
+    <div class="stat-value" id="stat-avg">—</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Max Offset</div>
+    <div class="stat-value" id="stat-max">—</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Area Off By</div>
+    <div class="stat-value" id="stat-area">—</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Score</div>
+    <div class="stat-value" id="stat-score">—</div>
+  </div>
+  <div id="btn-row">
+    <button class="action-btn" id="btn-reset">New Curve</button>
+    <button class="action-btn" id="btn-show" disabled>Show Error</button>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// ── State ────────────────────────────────────────────────────────────────────
+let state        = 'idle';   // idle | tracing | done
+let targetCurve  = [];
+let userPath     = [];
+let showingError = false;
+let mode         = 'numerical';
+
+// Fixed "medium" difficulty curve params
+const CURVE = { amp: 88, freq: 2.1, tolerance: 20 };
+
+const MODE_META = {
+  'no-feedback':   {
+    badge: 'No Feedback',
+    badgeBg: '#666', badgeColor: '#fff',
+    desc: 'Trace the line — results revealed at the end only',
+  },
+  'numerical': {
+    badge: 'Numerical',
+    badgeBg: '#4a36c0', badgeColor: '#fff',
+    desc: 'Shows your pixel distance from the line in real time',
+  },
+  'spatial-color': {
+    badge: 'Spatial-Color',
+    badgeBg: '#18a050', badgeColor: '#fff',
+    desc: 'Background shifts green → red based on how close you are',
+  },
+};
+
+// ── Curve generation ──────────────────────────────────────────────────────────
+function generateCurve() {
+  const pts = [], N = 400;
+  const a1  = CURVE.amp * (0.75 + Math.random() * 0.5);
+  const a2  = CURVE.amp * (0.28 + Math.random() * 0.38);
+  const f1  = CURVE.freq * (0.82 + Math.random() * 0.36);
+  const f2  = CURVE.freq * (1.5  + Math.random() * 0.6);
+  const ph1 = Math.random() * Math.PI * 2;
+  const ph2 = Math.random() * Math.PI * 2;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const x = 60 + t * (W - 120);
+    const y = H / 2
+      + a1 * Math.sin(f1 * Math.PI * 2 * t + ph1)
+      + a2 * Math.sin(f2 * Math.PI * 2 * t + ph2);
+    pts.push({ x, y: Math.max(42, Math.min(H - 42, y)) });
+  }
+  return pts;
+}
+
+// ── Session start ─────────────────────────────────────────────────────────────
+function startNew() {
+  targetCurve  = generateCurve();
+  userPath     = [];
+  state        = 'idle';
+  showingError = false;
+  resetBackground();
+  el('instruction').style.opacity  = '1';
+  el('score-popup').style.opacity  = '0';
+  el('live-offset').style.opacity  = '0';
+  el('btn-show').disabled          = true;
+  el('btn-show').textContent       = 'Show Error';
+  resetStats();
+  applyModeUI();
+  draw();
+}
+
+function el(id) { return document.getElementById(id); }
+
+// ── Mode UI ───────────────────────────────────────────────────────────────────
+function applyModeUI() {
+  const m = MODE_META[mode];
+  const badge = el('mode-badge');
+  badge.textContent      = m.badge;
+  badge.style.background = m.badgeBg;
+  badge.style.color      = m.badgeColor;
+  el('mode-desc').textContent = m.desc;
+}
+
+// ── Background (Spatial-Color) ────────────────────────────────────────────────
+function setBackground(offsetPx) {
+  // Traffic-light: 0→10px = white→light green, 10→35 = green→yellow, 35+→red
+  let r, g, b;
+  if (offsetPx <= 8) {
+    const s = offsetPx / 8;
+    r = Math.round(lerp(255, 180, s));
+    g = Math.round(lerp(255, 235, s));
+    b = Math.round(lerp(255, 175, s));
+  } else if (offsetPx <= 32) {
+    const s = (offsetPx - 8) / 24;
+    r = Math.round(lerp(180, 255, s));
+    g = Math.round(lerp(235, 210, s));
+    b = Math.round(lerp(175, 80,  s));
+  } else {
+    const s = Math.min((offsetPx - 32) / 45, 1);
+    r = 255;
+    g = Math.round(lerp(210, 65,  s));
+    b = Math.round(lerp(80,  65,  s));
+  }
+  document.body.style.background = `rgb(${r},${g},${b})`;
+}
+
+function resetBackground() {
+  document.body.style.background = '#ffffff';
+}
+
+// ── Numerical live readout ────────────────────────────────────────────────────
+function updateLiveOffset(d) {
+  el('live-offset').style.opacity = '1';
+  el('live-num').textContent = d.toFixed(1);
+  // green (0px) → yellow (~25px) → red (50+px)
+  const hue = Math.max(0, 118 - d * 2.4);
+  const sat = 68;
+  const lit = d < 5 ? 32 : 30;
+  el('live-offset').style.color = `hsl(${hue},${sat}%,${lit}%)`;
+}
+
+// ── Drawing ───────────────────────────────────────────────────────────────────
+function drawCurve(pts, color, lw) {
+  if (pts.length < 2) return;
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.strokeStyle = color;
+  ctx.lineWidth   = lw;
+  ctx.lineJoin    = 'round';
+  ctx.lineCap     = 'round';
+  ctx.stroke();
+}
+
+function drawStartDot() {
+  const p = targetCurve[0];
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 13, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(74,54,192,0.32)';
+  ctx.lineWidth   = 1.5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
+  ctx.fillStyle   = '#4a36c0';
+  ctx.fill();
+}
+
+function drawEndDot() {
+  const p = targetCurve[targetCurve.length - 1];
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(74,54,192,0.38)';
+  ctx.fill();
+}
+
+function drawErrorArea() {
+  if (userPath.length < 2) return;
+  const offs = computeOffsets();
+  for (let i = 0; i < offs.length - 1; i++) {
+    const o0 = offs[i], o1 = offs[i + 1];
+    const hue = Math.max(0, 118 - o0.dist * 2.4);
+    ctx.beginPath();
+    ctx.moveTo(o0.tx, o0.ty);
+    ctx.lineTo(o1.tx, o1.ty);
+    ctx.lineTo(o1.ux, o1.uy);
+    ctx.lineTo(o0.ux, o0.uy);
+    ctx.closePath();
+    ctx.fillStyle = `hsla(${hue},70%,48%,0.26)`;
+    ctx.fill();
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // subtle grid
+  ctx.strokeStyle = 'rgba(0,0,0,0.045)';
+  ctx.lineWidth   = 1;
+  for (let x = 0; x <= W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y <= H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  if (showingError) drawErrorArea();
+
+  // target curve with soft glow
+  ctx.shadowColor = 'rgba(74,54,192,0.2)';
+  ctx.shadowBlur  = 10;
+  drawCurve(targetCurve, '#4a36c0', 2.5);
+  ctx.shadowBlur  = 0;
+
+  // user trace
+  if (userPath.length > 1) drawCurve(userPath, 'rgba(16,160,82,0.82)', 2.2);
+
+  drawEndDot();
+  if (state === 'idle') drawStartDot();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function dist(ax, ay, bx, by) {
+  return Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2);
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function nearestDist(px, py) {
+  let best = Infinity;
+  for (const pt of targetCurve) {
+    const d = dist(px, py, pt.x, pt.y);
+    if (d < best) best = d;
+  }
+  return best;
+}
+
+function computeOffsets() {
+  if (userPath.length === 0) return [];
+  return targetCurve.map((tp, i) => {
+    const t  = i / (targetCurve.length - 1);
+    const ui = Math.min(Math.round(t * (userPath.length - 1)), userPath.length - 1);
+    const up = userPath[ui];
+    return { tx: tp.x, ty: tp.y, ux: up.x, uy: up.y, dist: dist(up.x, up.y, tp.x, tp.y) };
+  });
+}
+
+function computeArea(offs) {
+  return offs.reduce((sum, o, i) => {
+    if (i === 0) return sum;
+    const p = offs[i - 1];
+    return sum + ((o.dist + p.dist) / 2) * Math.abs(o.tx - p.tx);
+  }, 0);
+}
+
+// ── Grade ─────────────────────────────────────────────────────────────────────
+function getGrade(avg) {
+  const r = avg / CURVE.tolerance;
+  if (r < 0.30) return { letter: 'S', label: 'Perfect!',    color: '#18a050' };
+  if (r < 0.60) return { letter: 'A', label: 'Excellent!',  color: '#2070d8' };
+  if (r < 1.00) return { letter: 'B', label: 'Good',        color: '#4a36c0' };
+  if (r < 1.60) return { letter: 'C', label: 'Not bad',     color: '#b07010' };
+  if (r < 2.50) return { letter: 'D', label: 'Keep trying', color: '#d05010' };
+  return           { letter: 'F', label: 'Oops!',        color: '#c83030' };
+}
+
+// ── Finalize ──────────────────────────────────────────────────────────────────
+function finalize() {
+  state = 'done';
+  resetBackground();
+  el('live-offset').style.opacity = '0';
+
+  const offs  = computeOffsets();
+  if (!offs.length) return;
+
+  const ds    = offs.map(o => o.dist);
+  const avg   = ds.reduce((a, b) => a + b, 0) / ds.length;
+  const max   = Math.max(...ds);
+  const area  = computeArea(offs);
+  const score = Math.max(0, Math.round(100 - avg * 2));
+  const grade = getGrade(avg);
+  const cls   = avg < CURVE.tolerance ? 'good' : avg < CURVE.tolerance * 2 ? 'meh' : 'bad';
+
+  setStat('stat-avg',   avg.toFixed(1) + 'px', cls);
+  setStat('stat-max',   max.toFixed(1) + 'px', cls);
+  setStat('stat-area',  Math.round(area) + ' px²', cls);
+  setStat('stat-score', score + '%', cls);
+
+  el('grade-letter').textContent = grade.letter;
+  el('grade-letter').style.color = grade.color;
+  el('grade-label').textContent  = grade.label;
+  el('grade-label').style.color  = grade.color;
+  el('score-popup').style.opacity   = '1';
+  el('btn-show').disabled           = false;
+  el('instruction').style.opacity   = '0';
+  draw();
+}
+
+function setStat(id, val, cls) {
+  const e = el(id);
+  e.textContent = val;
+  e.className   = 'stat-value ' + (cls || '');
+}
+
+function resetStats() {
+  ['stat-avg','stat-max','stat-area','stat-score'].forEach(id => {
+    el(id).textContent = '—';
+    el(id).className   = 'stat-value';
+  });
+}
+
+// ── Input ─────────────────────────────────────────────────────────────────────
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+canvas.addEventListener('mousedown', e => {
+  if (state === 'done') return;
+  const pos = getPos(e);
+  if (state === 'idle' && dist(pos.x, pos.y, targetCurve[0].x, targetCurve[0].y) < 22) {
+    state    = 'tracing';
+    userPath = [pos];
+    el('instruction').style.opacity = '0';
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (state !== 'tracing') return;
+  const pos = getPos(e);
+  userPath.push(pos);
+  const d = nearestDist(pos.x, pos.y);
+
+  if (mode === 'numerical')     updateLiveOffset(d);
+  if (mode === 'spatial-color') setBackground(d);
+
+  const end = targetCurve[targetCurve.length - 1];
+  if (dist(pos.x, pos.y, end.x, end.y) < 20) {
+    finalize();
+  } else {
+    draw();
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  if (state === 'tracing' && userPath.length > 8) finalize();
+});
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+el('btn-reset').addEventListener('click', startNew);
+
+el('btn-show').addEventListener('click', () => {
+  showingError = !showingError;
+  el('btn-show').textContent = showingError ? 'Hide Error' : 'Show Error';
+  draw();
+});
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    startNew();
+  });
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+startNew();
+</script>
+</body>
+</html>
