@@ -17,7 +17,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: background 0.07s linear;
+    transition: background 0.35s ease-out;
   }
 
   h1 {
@@ -102,13 +102,10 @@
   /* ── Live offset (Numerical mode) ── */
   #live-offset {
     position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
     pointer-events: none;
     opacity: 0;
-    text-align: right;
-    transition: color 0.07s;
+    text-align: left;
+    transform: translateY(-50%);
   }
   #live-num {
     font-size: 3.2rem;
@@ -206,7 +203,25 @@
   .stat-value.bad  { color: #c83030; }
   .stat-value.meh  { color: #b07010; }
 
-  #btn-row { display: flex; gap: 8px; }
+  #btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  #download-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #csv-filename {
+    background: #f7f7fd;
+    border: 1.5px solid #e2e2f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-family: inherit;
+    color: #5050a0;
+    width: 140px;
+  }
+  #csv-filename::placeholder { color: #a0a0c8; }
+  #csv-filename:focus { outline: none; border-color: #a0a0d8; }
 
   button.action-btn {
     background: #f3f3fa;
@@ -277,6 +292,10 @@
   <div id="btn-row">
     <button class="action-btn" id="btn-reset">New Curve</button>
     <button class="action-btn" id="btn-show" disabled>Show Error</button>
+    <div id="download-box">
+      <input type="text" id="csv-filename" placeholder="Filename (e.g. trial_01)" maxlength="64">
+      <button class="action-btn" id="btn-download" disabled>Download CSV</button>
+    </div>
   </div>
 </div>
 
@@ -291,6 +310,7 @@ let targetCurve  = [];
 let userPath     = [];
 let showingError = false;
 let mode         = 'numerical';
+let trialNumber  = 0;
 
 // Fixed "medium" difficulty curve params
 const CURVE = { amp: 88, freq: 2.1, tolerance: 20 };
@@ -333,9 +353,28 @@ function generateCurve() {
   return pts;
 }
 
+function generateCurve2() {
+  const pts = [], N = 400;
+  const a1  = CURVE.amp * (0.75 +  2 * 0.5);
+  const a2  = CURVE.amp * (0.28 + 1 * 0.38);
+  const f1  = CURVE.freq * (0.82 + 3* 0.36);
+  const f2  = CURVE.freq * (1.5  + 4 * 0.6);
+  const ph1 = 1.2 * Math.PI * 2;
+  const ph2 = 1.5 * Math.PI * 2;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const x = 60 + t * (W - 120);
+    const y = H / 2
+      + a1 * Math.sin(f1 * Math.PI * 2 * t + ph1)
+      + a2 * Math.sin(f2 * Math.PI * 2 * t + ph2);
+    pts.push({ x, y: Math.max(42, Math.min(H - 42, y)) });
+  }
+  return pts;
+}
+
 // ── Session start ─────────────────────────────────────────────────────────────
 function startNew() {
-  targetCurve  = generateCurve();
+  targetCurve  = generateCurve2();
   userPath     = [];
   state        = 'idle';
   showingError = false;
@@ -345,6 +384,7 @@ function startNew() {
   el('live-offset').style.opacity  = '0';
   el('btn-show').disabled          = true;
   el('btn-show').textContent       = 'Show Error';
+  el('btn-download').disabled      = true;
   resetStats();
   applyModeUI();
   draw();
@@ -363,21 +403,26 @@ function applyModeUI() {
 }
 
 // ── Background (Spatial-Color) ────────────────────────────────────────────────
+let lastBgOffset = -1;
+const BG_UPDATE_THRESHOLD = 2.5;  // only update when offset changes by this much (reduces flashing)
+
 function setBackground(offsetPx) {
-  // Traffic-light: 0→10px = white→light green, 10→35 = green→yellow, 35+→red
+  if (Math.abs(offsetPx - lastBgOffset) < BG_UPDATE_THRESHOLD) return;
+  lastBgOffset = offsetPx;
+  // Traffic-light: 0→2px = green, 2→5px = yellow, 5px+ = red (small shift = red)
   let r, g, b;
-  if (offsetPx <= 8) {
-    const s = offsetPx / 8;
+  if (offsetPx <= 2) {
+    const s = offsetPx / 2;
     r = Math.round(lerp(255, 180, s));
     g = Math.round(lerp(255, 235, s));
     b = Math.round(lerp(255, 175, s));
-  } else if (offsetPx <= 32) {
-    const s = (offsetPx - 8) / 24;
+  } else if (offsetPx <= 5) {
+    const s = (offsetPx - 2) / 3;
     r = Math.round(lerp(180, 255, s));
     g = Math.round(lerp(235, 210, s));
     b = Math.round(lerp(175, 80,  s));
   } else {
-    const s = Math.min((offsetPx - 32) / 45, 1);
+    const s = Math.min((offsetPx - 5) / 10, 1);
     r = 255;
     g = Math.round(lerp(210, 65,  s));
     b = Math.round(lerp(80,  65,  s));
@@ -387,17 +432,16 @@ function setBackground(offsetPx) {
 
 function resetBackground() {
   document.body.style.background = '#ffffff';
+  lastBgOffset = -1;
 }
 
 // ── Numerical live readout ────────────────────────────────────────────────────
-function updateLiveOffset(d) {
-  el('live-offset').style.opacity = '1';
+function updateLiveOffset(d, x, y) {
+  const elm = el('live-offset');
+  elm.style.opacity = '1';
+  elm.style.left = Math.min(Math.max(x + 22, 8), W - 110) + 'px';
+  elm.style.top = Math.min(Math.max(y - 28, 12), H - 48) + 'px';
   el('live-num').textContent = d.toFixed(1);
-  // green (0px) → yellow (~25px) → red (50+px)
-  const hue = Math.max(0, 118 - d * 2.4);
-  const sat = 68;
-  const lit = d < 5 ? 32 : 30;
-  el('live-offset').style.color = `hsl(${hue},${sat}%,${lit}%)`;
 }
 
 // ── Drawing ───────────────────────────────────────────────────────────────────
@@ -435,20 +479,19 @@ function drawEndDot() {
 }
 
 function drawErrorArea() {
-  if (userPath.length < 2) return;
-  const offs = computeOffsets();
-  for (let i = 0; i < offs.length - 1; i++) {
-    const o0 = offs[i], o1 = offs[i + 1];
-    const hue = Math.max(0, 118 - o0.dist * 2.4);
-    ctx.beginPath();
-    ctx.moveTo(o0.tx, o0.ty);
-    ctx.lineTo(o1.tx, o1.ty);
-    ctx.lineTo(o1.ux, o1.uy);
-    ctx.lineTo(o0.ux, o0.uy);
-    ctx.closePath();
-    ctx.fillStyle = `hsla(${hue},70%,48%,0.26)`;
-    ctx.fill();
+  if (userPath.length < 2 || targetCurve.length < 2) return;
+  const tc = targetCurve, up = userPath;
+  const N = tc.length - 1, ulen = up.length - 1;
+  ctx.beginPath();
+  ctx.moveTo(tc[0].x, tc[0].y);
+  for (let i = 1; i <= N; i++) ctx.lineTo(tc[i].x, tc[i].y);
+  for (let i = N - 1; i >= 0; i--) {
+    const ui = Math.min(Math.round((i / N) * ulen), ulen);
+    ctx.lineTo(up[ui].x, up[ui].y);
   }
+  ctx.closePath();
+  ctx.fillStyle = 'hsla(118, 70%, 48%, 0.22)';
+  ctx.fill();
 }
 
 function draw() {
@@ -481,13 +524,51 @@ function dist(ax, ay, bx, by) {
 }
 function lerp(a, b, t) { return a + (b - a) * t; }
 
-function nearestDist(px, py) {
+/** Perpendicular (vector normal) distance from point to line segment; returns { dist, foot } */
+function pointToSegmentDistAndFoot(px, py, ax, ay, bx, by) {
+  const vx = bx - ax, vy = by - ay;
+  const wx = px - ax, wy = py - ay;
+  const c1 = wx * vx + wy * vy;
+  const c2 = vx * vx + vy * vy;
+  if (c2 < 1e-12) return { dist: dist(px, py, ax, ay), foot: { x: ax, y: ay } };
+  let b = c1 / c2;
+  if (b <= 0) return { dist: dist(px, py, ax, ay), foot: { x: ax, y: ay } };
+  if (b >= 1) return { dist: dist(px, py, bx, by), foot: { x: bx, y: by } };
+  const qx = ax + b * vx, qy = ay + b * vy;
+  return { dist: dist(px, py, qx, qy), foot: { x: qx, y: qy } };
+}
+
+function pointToSegmentDist(px, py, ax, ay, bx, by) {
+  return pointToSegmentDistAndFoot(px, py, ax, ay, bx, by).dist;
+}
+
+/** Perpendicular distance from point to polyline (min over all segments) */
+function pointToPolylineDist(px, py, pts) {
+  if (pts.length < 2) return pts.length === 1 ? dist(px, py, pts[0].x, pts[0].y) : Infinity;
   let best = Infinity;
-  for (const pt of targetCurve) {
-    const d = dist(px, py, pt.x, pt.y);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const d = pointToSegmentDist(px, py, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y);
     if (d < best) best = d;
   }
   return best;
+}
+
+/** Perpendicular distance and foot point on polyline */
+function pointToPolylineDistAndFoot(px, py, pts) {
+  if (pts.length < 2) {
+    if (pts.length === 1) return { dist: dist(px, py, pts[0].x, pts[0].y), foot: { x: pts[0].x, y: pts[0].y } };
+    return { dist: Infinity, foot: null };
+  }
+  let best = { dist: Infinity, foot: null };
+  for (let i = 0; i < pts.length - 1; i++) {
+    const r = pointToSegmentDistAndFoot(px, py, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y);
+    if (r.dist < best.dist) best = r;
+  }
+  return best;
+}
+
+function nearestDist(px, py) {
+  return pointToPolylineDist(px, py, targetCurve);
 }
 
 function computeOffsets() {
@@ -496,27 +577,28 @@ function computeOffsets() {
     const t  = i / (targetCurve.length - 1);
     const ui = Math.min(Math.round(t * (userPath.length - 1)), userPath.length - 1);
     const up = userPath[ui];
-    return { tx: tp.x, ty: tp.y, ux: up.x, uy: up.y, dist: dist(up.x, up.y, tp.x, tp.y) };
+    const d  = pointToPolylineDist(up.x, up.y, targetCurve);
+    return { tx: tp.x, ty: tp.y, ux: up.x, uy: up.y, dist: d };
   });
+}
+
+function segmentLength(ax, ay, bx, by) {
+  return dist(ax, ay, bx, by);
 }
 
 function computeArea(offs) {
   return offs.reduce((sum, o, i) => {
     if (i === 0) return sum;
     const p = offs[i - 1];
-    return sum + ((o.dist + p.dist) / 2) * Math.abs(o.tx - p.tx);
+    const segLen = segmentLength(p.tx, p.ty, o.tx, o.ty);
+    return sum + ((o.dist + p.dist) / 2) * segLen;
   }, 0);
 }
 
 // ── Grade ─────────────────────────────────────────────────────────────────────
 function getGrade(avg) {
   const r = avg / CURVE.tolerance;
-  if (r < 0.30) return { letter: 'S', label: 'Perfect!',    color: '#18a050' };
-  if (r < 0.60) return { letter: 'A', label: 'Excellent!',  color: '#2070d8' };
-  if (r < 1.00) return { letter: 'B', label: 'Good',        color: '#4a36c0' };
-  if (r < 1.60) return { letter: 'C', label: 'Not bad',     color: '#b07010' };
-  if (r < 2.50) return { letter: 'D', label: 'Keep trying', color: '#d05010' };
-  return           { letter: 'F', label: 'Oops!',        color: '#c83030' };
+  if (r) return { label: 'Done!',    color: '#18a050' };
 }
 
 // ── Finalize ──────────────────────────────────────────────────────────────────
@@ -547,6 +629,8 @@ function finalize() {
   el('grade-label').style.color  = grade.color;
   el('score-popup').style.opacity   = '1';
   el('btn-show').disabled           = false;
+  el('btn-download').disabled       = false;
+  trialNumber += 1;
   el('instruction').style.opacity   = '0';
   draw();
 }
@@ -562,6 +646,46 @@ function resetStats() {
     el(id).textContent = '—';
     el(id).className   = 'stat-value';
   });
+}
+
+// ── CSV download ───────────────────────────────────────────────────────────────
+function downloadTrialCSV() {
+  if (state !== 'done' || !targetCurve.length || !userPath.length) return;
+  const offs = computeOffsets();
+  const ts = new Date().toISOString();
+  const lines = [];
+
+  lines.push('trial,' + trialNumber);
+  lines.push('timestamp,' + ts);
+  lines.push('mode,' + mode);
+  lines.push('');
+
+  lines.push('target_curve');
+  lines.push('index,target_x,target_y');
+  targetCurve.forEach((p, i) => lines.push(`${i},${p.x.toFixed(2)},${p.y.toFixed(2)}`));
+  lines.push('');
+
+  lines.push('user_path');
+  lines.push('index,user_x,user_y');
+  userPath.forEach((p, i) => lines.push(`${i},${p.x.toFixed(2)},${p.y.toFixed(2)}`));
+  lines.push('');
+
+  lines.push('matched_data');
+  lines.push('index,target_x,target_y,user_x,user_y,offset_px');
+  offs.forEach((o, i) => lines.push(`${i},${o.tx.toFixed(2)},${o.ty.toFixed(2)},${o.ux.toFixed(2)},${o.uy.toFixed(2)},${o.dist.toFixed(2)}`));
+
+  const customName = (el('csv-filename').value || '').trim().replace(/[/\\:*?"<>|]/g, '_');
+  const baseName = customName || `line_tracer_trial_${trialNumber}_${ts.slice(0, 19).replace(/[:-]/g, '')}`;
+  const fileName = baseName.endsWith('.csv') ? baseName : baseName + '.csv';
+
+  const csv = lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── Input ─────────────────────────────────────────────────────────────────────
@@ -586,7 +710,7 @@ canvas.addEventListener('mousemove', e => {
   userPath.push(pos);
   const d = nearestDist(pos.x, pos.y);
 
-  if (mode === 'numerical')     updateLiveOffset(d);
+  if (mode === 'numerical')     updateLiveOffset(d, pos.x, pos.y);
   if (mode === 'spatial-color') setBackground(d);
 
   const end = targetCurve[targetCurve.length - 1];
@@ -609,6 +733,8 @@ el('btn-show').addEventListener('click', () => {
   el('btn-show').textContent = showingError ? 'Hide Error' : 'Show Error';
   draw();
 });
+
+el('btn-download').addEventListener('click', downloadTrialCSV);
 
 document.querySelectorAll('.mode-btn').forEach(btn => {
   btn.addEventListener('click', () => {
