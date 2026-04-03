@@ -372,3 +372,29 @@ ggsave(file.path(out_dir, "r_speed_area_scatter.png"), p_sa, width = 7, height =
 
 cat("Saved figures to ", normalizePath(out_dir, winslash = "/"), "\n", sep = "")
 cat("\nDone!!\n")
+
+# --- Summary Statistics Report ---
+cat("\n===============================================\n")
+cat("FINAL PERFORMANCE SUMMARY (n =", nrow(paired_complete), ")\n")
+cat("===============================================\n")
+
+summary_stats <- active %>%
+  group_by(mode) %>%
+  summarise(
+    avg_time = mean(duration_sec),
+    avg_area = mean(area_off_px2),
+    .groups = "drop"
+  )
+
+# Extract values for easy printing
+num_time <- summary_stats$avg_time[summary_stats$mode == "numerical"]
+spa_time <- summary_stats$avg_time[summary_stats$mode == "spatial-color"]
+num_area <- summary_stats$avg_area[summary_stats$mode == "numerical"]
+spa_area <- summary_stats$avg_area[summary_stats$mode == "spatial-color"]
+
+cat(sprintf("Average Time (Numerical):      %.2f seconds\n", num_time))
+cat(sprintf("Average Time (Spatial):        %.2f seconds\n", spa_time))
+cat("-----------------------------------------------\n")
+cat(sprintf("Average Accuracy (Numerical):  %.2f px^2\n", num_area))
+cat(sprintf("Average Accuracy (Spatial):    %.2f px^2\n", spa_area))
+cat("===============================================\n")
