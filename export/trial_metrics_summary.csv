@@ -23,9 +23,14 @@ Ricky,spatial-color,14,2026-03-11T19:28:07.207Z,ricky_spatial_1min_3rd,8.73,0.0,
 alison,no-feedback,1,2026-03-11T16:26:03.708Z,alison_no_feedback_first01.17.37,5.82,0.0,1.39,2978.9,97
 alison,numerical,2,2026-03-11T16:28:34.527Z,alison_numerical_01.16.71_second,4.1,0.0,1.2,2877.4,98
 alison,spatial-color,3,2026-03-11T16:31:30.965Z,alison_spatial_colour_third_01.18.86,4.62,0.01,1.21,2929.4,98
+belinda,numerical,2,2026-04-02T21:00:33.845Z,belinda_numerical_1min42s_2nd,4.87,0.0,1.3,3273.6,97
+belinda,spatial-color,1,2026-04-02T20:58:04.821Z,belinda_spatial_1min5s_1st,5.79,0.0,1.46,3257.7,97
 bruce,no-feedback,1,2026-03-11T20:09:20.822Z,bruce_q_no_feedback_first)00.52.04,7.25,0.0,1.8,4330.2,96
 bruce,numerical,4,2026-03-11T20:15:41.106Z,bruce_q_numerical_first_02.41.50,4.74,0.0,1.21,2651.2,98
 bruce,spatial-color,5,2026-03-11T20:17:57.324Z,bruce_q_spatial_colour_second_01.21.12,6.38,0.0,1.3,3330.7,97
+david,no-feedback,6,2026-04-02T21:49:12.847Z,david_0.21.46_no_feedbac,8.69,0.0,2.46,6038.5,95
+david,numerical,10,2026-04-02T21:53:30.908Z,david_numerical_00.38.76_third,6.76,0.01,1.77,4471.7,96
+david,spatial-color,8,2026-04-02T21:51:52.736Z,david_spatial_0.56.22_second,5.6,0.02,1.52,3969.2,97
 eric,spatial-color,2,2026-03-12T17:27:17.559Z,eric_1.44.86_color_2,5.07,0.0,0.81,1913.8,98
 eric,no-feedback,1,2026-03-12T17:24:55.312Z,eric_1.57.23_nofeedback_1,4.09,0.0,0.78,2000.6,98
 eric,numerical,3,2026-03-12T17:29:58.561Z,eric_2.06.85_num_3rd,3.39,0.0,0.7,1653.6,99
@@ -68,6 +73,8 @@ shiv,no-feedback,1,2026-03-11T16:43:46.456Z,shiv_57.67_nofeed_1st,9.86,0.0,1.89,
 soham,spatial-color,3,2026-03-11T17:03:28.578Z,soham_1.15.33_3rd,5.33,0.01,1.23,2971.5,98
 soham,numerical,2,2026-03-11T17:01:33.362Z,soham_2.03.48_num_2nd,3.17,0.01,1.02,2486.3,98
 soham,no-feedback,1,2026-03-11T16:58:46.512Z,soham_2.21.82_nofeed_1st,5.42,0.0,1.16,2865.9,98
+srishti,spatial-color,3,2026-04-02T21:03:38.863Z,srishti_col2_2.04.43,3.2,0.0,0.85,2077.0,98
+srishti,numerical,2,2026-04-02T21:01:11.312Z,srishti_num1_2.41.98,3.06,0.0,0.71,1733.3,99
 sumedhaa,no-feedback,1,2026-03-10T18:32:23.259Z,"suma_nofeedback,2min28_1st",4.79,0.0,1.21,2647.0,98
 sumedhaa,numerical,2,2026-03-10T18:36:06.150Z,"suma_numerical_1min,55_2nd",7.92,0.0,1.07,2711.5,98
 sumedhaa,spatial-color,1,2026-03-10T18:40:32.837Z,suma_spatial_2min12_3rd,3.53,0.0,0.98,2548.2,98
