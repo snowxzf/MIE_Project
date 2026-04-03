@@ -2,24 +2,6 @@ participant,mode,trial,timestamp,filename,max_offset_px,min_offset_px,avg_offset
 Aayush,no-feedback,1,2026-03-11T16:41:57.264Z,aayush_nofeedback_1min39_1st,4.8,0.0,1.11,2332.0,98
 Aayush,numerical,2,2026-03-11T16:49:35.442Z,aayush_numerico_2min43_2nd,3.38,0.0,0.86,1888.4,98
 Aayush,spatial-color,3,2026-03-11T16:53:21.441Z,aayush_spatial_2min30_3rd,5.0,0.0,0.91,2164.8,98
-Derek Chen,no-feedback,4,2026-03-11T15:57:19.678Z,dc_nofeedback_1min42_1st,6.08,0.0,1.23,2878.4,98
-Derek Chen,numerical,5,2026-03-11T15:59:26.592Z,dc_numerical_1min32_2nd,4.47,0.0,1.1,2742.2,98
-Derek Chen,spatial-color,6,2026-03-11T16:01:12.442Z,dc_spatial_1min16_3rd,5.27,0.0,1.14,2748.5,98
-Ines,no-feedback,1,2026-03-11T14:50:02.204Z,ines_nofeedbac_1min5_1st,6.76,0.0,1.16,2647.7,98
-Ines,numerical,2,2026-03-11T14:52:25.989Z,ines_numerical_1min33_2nd,5.79,0.0,1.03,2245.3,98
-Ines,spatial-color,3,2026-03-11T14:54:47.386Z,ines_spatial_1min51_3rd,3.7,0.0,0.92,2122.0,98
-Michael,no-feedback,2,2026-03-12T15:04:49.588Z,michael_nofeedback_35s_1st,13.49,0.01,2.82,7075.1,94
-Michael,numerical,3,2026-03-12T15:06:30.626Z,michael_numerical_2nd_50s_2nd,8.42,0.03,1.84,4513.4,96
-Michael,spatial-color,6,2026-03-12T15:08:31.019Z,michael_spatial_3rd_40s,7.58,0.0,1.95,4449.8,96
-Nareen,no-feedback,7,2026-03-12T17:14:56.804Z,nareen_nofeedback_27s_1st,10.0,0.0,2.1,5496.3,96
-Nareen,numerical,8,2026-03-12T17:17:09.369Z,nareen_numerical_43s_2nd,7.24,0.0,1.73,4209.1,97
-Nareen,spatial-color,9,2026-03-12T17:18:27.308Z,nareen_spatial_43.28s_3rd,7.14,0.0,1.44,3437.6,97
-Rahi,no-feedback,10,2026-03-12T17:25:09.202Z,ra_nofeedback_35.28s_1st,7.72,0.0,2.22,5780.6,96
-Rahi,numerical,12,2026-03-12T17:27:50.514Z,ra_numerical_1min20_2nd,7.51,0.0,1.56,3708.4,97
-Rahi,spatial-color,13,2026-03-12T17:29:39.474Z,ra_spatial_1min3_3rd,5.31,0.01,1.24,2911.1,98
-Ricky,no-feedback,12,2026-03-11T19:25:04.222Z,ricky_nofeedback_46s_1st,10.24,0.0,2.12,5227.8,96
-Ricky,numerical,13,2026-03-11T19:26:41.984Z,ricky_numerical_1min2s_2nd,7.53,0.0,1.63,3396.1,97
-Ricky,spatial-color,14,2026-03-11T19:28:07.207Z,ricky_spatial_1min_3rd,8.73,0.0,1.43,2937.3,97
 alison,no-feedback,1,2026-03-11T16:26:03.708Z,alison_no_feedback_first01.17.37,5.82,0.0,1.39,2978.9,97
 alison,numerical,2,2026-03-11T16:28:34.527Z,alison_numerical_01.16.71_second,4.1,0.0,1.2,2877.4,98
 alison,spatial-color,3,2026-03-11T16:31:30.965Z,alison_spatial_colour_third_01.18.86,4.62,0.01,1.21,2929.4,98
@@ -31,12 +13,24 @@ bruce,spatial-color,5,2026-03-11T20:17:57.324Z,bruce_q_spatial_colour_second_01.
 david,no-feedback,6,2026-04-02T21:49:12.847Z,david_0.21.46_no_feedbac,8.69,0.0,2.46,6038.5,95
 david,numerical,10,2026-04-02T21:53:30.908Z,david_numerical_00.38.76_third,6.76,0.01,1.77,4471.7,96
 david,spatial-color,8,2026-04-02T21:51:52.736Z,david_spatial_0.56.22_second,5.6,0.02,1.52,3969.2,97
+Derek Chen,no-feedback,4,2026-03-11T15:57:19.678Z,dc_nofeedback_1min42_1st,6.08,0.0,1.23,2878.4,98
+Derek Chen,numerical,5,2026-03-11T15:59:26.592Z,dc_numerical_1min32_2nd,4.47,0.0,1.1,2742.2,98
+Derek Chen,spatial-color,6,2026-03-11T16:01:12.442Z,dc_spatial_1min16_3rd,5.27,0.0,1.14,2748.5,98
+emily,no-feedback,1,2026-03-23T15:14:27.004Z,emily_nofeedback_0.52.95,7.28,0.01,1.68,3640.2,97
+emily,numerical,3,2026-03-23T15:18:43.440Z,emily_numerical_01.24.09,10.28,0.0,1.31,2881.3,97
+emily,spatial-color,2,2026-03-23T15:16:33.832Z,emily_spatial_0.52.26_first,7.9,0.01,1.56,3724.1,97
 eric,spatial-color,2,2026-03-12T17:27:17.559Z,eric_1.44.86_color_2,5.07,0.0,0.81,1913.8,98
 eric,no-feedback,1,2026-03-12T17:24:55.312Z,eric_1.57.23_nofeedback_1,4.09,0.0,0.78,2000.6,98
 eric,numerical,3,2026-03-12T17:29:58.561Z,eric_2.06.85_num_3rd,3.39,0.0,0.7,1653.6,99
 han,spatial-color,4,2026-03-11T16:32:50.907Z,han_1.07.53_color_3rd,3.41,0.0,0.97,2285.2,98
 han,numerical,3,2026-03-11T16:31:09.929Z,han_1.09.38_num_2nd,4.93,0.01,0.98,2402.3,98
 han,no-feedback,1,2026-03-11T16:28:16.487Z,han_1.25.43_no_feed_1st,6.87,0.0,1.1,2683.9,98
+heidi,no-feedback,1,2026-03-23T15:25:51.472Z,heidi_no_feedback_01.09.92,6.11,0.01,1.42,3137.0,97
+heidi,numerical,2,2026-03-23T15:29:02.367Z,heidi_numerical_first_02.10.19,6.1,0.0,1.19,2595.0,98
+heidi,spatial-color,3,2026-03-23T15:31:43.135Z,heidi_spatial_second_01.38.81,5.66,0.0,1.21,2725.3,98
+Ines,no-feedback,1,2026-03-11T14:50:02.204Z,ines_nofeedbac_1min5_1st,6.76,0.0,1.16,2647.7,98
+Ines,numerical,2,2026-03-11T14:52:25.989Z,ines_numerical_1min33_2nd,5.79,0.0,1.03,2245.3,98
+Ines,spatial-color,3,2026-03-11T14:54:47.386Z,ines_spatial_1min51_3rd,3.7,0.0,0.92,2122.0,98
 j chen,no-feedback,1,2026-03-11T16:17:52.901Z,jchen_48.78_nofeed_1st,7.7,0.0,1.55,4425.9,97
 j chen,numerical,2,2026-03-11T16:19:15.033Z,jchen_55.58_num_2nd,4.78,0.0,1.1,2765.8,98
 j chen,spatial-color,3,2026-03-11T16:20:37.769Z,jchen_59.70_color_3rd,4.72,0.0,0.93,2341.0,98
@@ -52,15 +46,27 @@ lawrence,spatial-color,5,2026-03-11T19:53:37.212Z,lawrence_spatial_colour_third_
 mani,no-feedback,2,2026-03-11T15:28:15.561Z,mani_0.56.31_no_feedback_ssecond,5.55,0.0,1.1,2353.1,98
 mani,spatial-color,3,2026-03-11T15:31:15.612Z,mani_01.48.48_spatial_colur_third,2.58,0.0,0.77,1935.1,98
 mani,no-feedback,1,2026-03-11T15:24:35.337Z,mani_1.5number,43.66,0.07,10.75,31713.9,79
+Michael,no-feedback,2,2026-03-12T15:04:49.588Z,michael_nofeedback_35s_1st,13.49,0.01,2.82,7075.1,94
+Michael,numerical,3,2026-03-12T15:06:30.626Z,michael_numerical_2nd_50s_2nd,8.42,0.03,1.84,4513.4,96
+Michael,spatial-color,6,2026-03-12T15:08:31.019Z,michael_spatial_3rd_40s,7.58,0.0,1.95,4449.8,96
 mikeli,no-feedback,1,2026-03-12T14:44:37.064Z,mikeli_nofeedback_first_01.02.83,7.5,0.01,1.74,4020.8,97
 mikeli,numerical,3,2026-03-12T14:48:46.551Z,mikeli_numerical_third_01.03.17,7.28,0.0,1.66,3585.2,97
 mikeli,spatial-color,2,2026-03-12T14:46:45.085Z,mikeli_spatial_colour_second_01.06.41,9.4,0.0,1.59,3394.3,97
+Nareen,no-feedback,7,2026-03-12T17:14:56.804Z,nareen_nofeedback_27s_1st,10.0,0.0,2.1,5496.3,96
+Nareen,numerical,8,2026-03-12T17:17:09.369Z,nareen_numerical_43s_2nd,7.24,0.0,1.73,4209.1,97
+Nareen,spatial-color,9,2026-03-12T17:18:27.308Z,nareen_spatial_43.28s_3rd,7.14,0.0,1.44,3437.6,97
 pranav,numerical,6,2026-03-11T14:49:33.373Z,pranav_1min09.33_num_2nd,3.79,0.0,1.06,2561.1,98
 pranav,spatial-color,7,2026-03-11T14:51:51.857Z,pranav_1min27.72_col_3rd,3.36,0.0,0.89,2105.2,98
 pranav,no-feedback,1,2026-03-11T14:43:44.279Z,pranav_2min50.36_nofeed_1st,3.18,0.02,0.76,1953.4,98
 rachel,no-feedback,1,2026-03-11T17:17:54.730Z,rachel_45.15_nofeed_1st,6.1,0.01,1.66,4199.7,97
 rachel,numerical,3,2026-03-11T17:20:29.926Z,rachel_52.08_num_3rd,9.17,0.01,1.69,3857.7,97
 rachel,spatial-color,2,2026-03-11T17:19:16.155Z,rachel_52.17_color_2nd,5.26,0.0,1.33,3223.0,97
+Rahi,no-feedback,10,2026-03-12T17:25:09.202Z,ra_nofeedback_35.28s_1st,7.72,0.0,2.22,5780.6,96
+Rahi,numerical,12,2026-03-12T17:27:50.514Z,ra_numerical_1min20_2nd,7.51,0.0,1.56,3708.4,97
+Rahi,spatial-color,13,2026-03-12T17:29:39.474Z,ra_spatial_1min3_3rd,5.31,0.01,1.24,2911.1,98
+Ricky,no-feedback,12,2026-03-11T19:25:04.222Z,ricky_nofeedback_46s_1st,10.24,0.0,2.12,5227.8,96
+Ricky,numerical,13,2026-03-11T19:26:41.984Z,ricky_numerical_1min2s_2nd,7.53,0.0,1.63,3396.1,97
+Ricky,spatial-color,14,2026-03-11T19:28:07.207Z,ricky_spatial_1min_3rd,8.73,0.0,1.43,2937.3,97
 robyn,no-feedback,2,2026-03-11T19:45:33.370Z,robbers_1.18.07_nofeed_1st,5.29,0.0,0.98,2275.0,98
 robyn,spatial-color,3,2026-03-11T19:48:58.052Z,robbers_1.22.74_color_2nd,3.44,0.0,0.88,2318.0,98
 robyn,numerical,5,2026-03-11T19:53:15.901Z,robbers_1.37.35_color_2nd,3.4,0.0,0.84,2180.5,98
