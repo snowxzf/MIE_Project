@@ -2,18 +2,16 @@
 
 ## Overview
 
-This script reads your collected CSV trial data and:
+This script reads the collected CSV trial data and:
 
-1. **Generates graphs** — Overlays the target curve (reference line) with the participant’s cursor path for each trial.
-2. **Exports flat CSVs** — Produces CSVs with aligned columns for **target data** (graph) and **cursor data** (participant).
+1. Overlays the target curve (reference line) with the participant’s cursor path for each trial.
+2. Produces CSVs with aligned columns for **target data** (graph) and **cursor data** (participant).
 
 ## Output Structure
 
 ### Graphs (`code/graphs/`)
 
-- One PNG per trial showing:
-  - **Target curve (purple)** — The reference line on the graph
-  - **Participant cursor (green)** — Mouse trace during the task
+- One PNG per trial showing the reference line on the graph and mouse trace during the task
 
 ### Trial Metrics Summary (`code/export/trial_metrics_summary.csv`)
 
