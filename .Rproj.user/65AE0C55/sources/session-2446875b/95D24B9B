@@ -1,0 +1,27 @@
+{
+    "id": "95D24B9B",
+    "path": "~/MIE_Project/build_mie286_vectors.R",
+    "project_path": "build_mie286_vectors.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1775227383208.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "11,67",
+        "scrollLine": "0",
+        "docOutlineVisible": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1775228176,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1775228176662,
+    "read_only": false,
+    "read_only_alternatives": []
+}

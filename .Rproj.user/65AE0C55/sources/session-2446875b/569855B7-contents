@@ -91,7 +91,7 @@ triple <- trial %>%
   filter(.data$mode %in% c("no-feedback", "numerical", "spatial-color")) %>%
   distinct(.data$participant, .data$mode) %>%
   count(.data$participant, name = "n_modes") %>%
-  filter(.data$n_modes >= 2L)
+  filter(.data$n_modes >= 3L)
 paired_ids <- paired_complete$participant
 miss <- setdiff(triple$participant, paired_ids)
 if (length(miss)) {
