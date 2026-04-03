@@ -398,3 +398,40 @@ cat("-----------------------------------------------\n")
 cat(sprintf("Average Accuracy (Numerical):  %.2f px^2\n", num_area))
 cat(sprintf("Average Accuracy (Spatial):    %.2f px^2\n", spa_area))
 cat("===============================================\n")
+
+# Finds the T-score that cuts off the top 2.5% and bottom 2.5%
+qt(p = 0.025, df = 31, lower.tail = FALSE) 
+# Result: ~2.04. If your t-score > 2.04, your p-value will be < 0.05!
+
+# Define the file path in your graphs directory
+t_dist_path <- file.path(out_dir, "r_t_distribution_df31.png")
+
+# 1. Open the PNG device
+# We set the width, height, and res to match your other plots
+png(t_dist_path, width = 7, height = 4.5, units = "in", res = 150)
+
+# 2. Adjust margins to avoid the "margins too large" error
+par(mar = c(4.5, 4.5, 3, 1))
+
+# 3. Create the T-distribution data (df = 31 for your 32 participants)
+x_vals <- seq(-4, 4, length = 200)
+y_vals <- dt(x_vals, df = 31)
+
+# 4. Draw the plot
+plot(x_vals, y_vals, type = "l", lwd = 2.5, col = "#3d4f73",
+     main = "T-Distribution for Paired Comparison (df = 31)",
+     xlab = "t-statistic", 
+     ylab = "Density",
+     frame.plot = FALSE)
+
+# 5. Add Critical Value lines (alpha = 0.05, two-tailed)
+crit_t <- qt(0.025, df = 31, lower.tail = FALSE)
+abline(v = c(-crit_t, crit_t), col = "#b22222", lty = 2, linewidth = 1.2)
+
+# Optional: Add a text label for the critical value
+text(x = crit_t + 0.5, y = 0.35, labels = paste0("Crit t = ", round(crit_t, 2)), col = "#b22222", cex = 0.8)
+
+# 6. Close the device to save the file
+dev.off()
+
+cat("Saved T-distribution plot to: ", normalizePath(t_dist_path, winslash = "/"), "\n")
