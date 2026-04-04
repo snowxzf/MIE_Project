@@ -3,7 +3,7 @@
 # Refresh vectors from CSV
 # DV1 = duration_sec (s), DV2 = area_off_px2 (lower = better trace).
 
-need <- c("ggplot2", "tidyr", "dplyr")
+need <- c("ggplot2", "tidyr", "dplyr", "patchwork")
 miss <- need[!vapply(need, requireNamespace, FUN.VALUE = logical(1), quietly = TRUE)]
 if (length(miss)) {
   stop("Install: install.packages(c(", paste0('"', miss, '"', collapse = ", "), "))")
@@ -12,6 +12,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(tidyr)
   library(dplyr)
+  library(patchwork)
 })
 
 rp <- function(p) {
@@ -34,8 +35,20 @@ stopifnot(
   length(area_off_px2_spatial_color) == n_obs
 )
 
+if (!exists("gender", inherits = FALSE)) gender <- rep(NA_character_, n_obs)
+if (!exists("avg_gaming_hours_per_day", inherits = FALSE)) {
+  avg_gaming_hours_per_day <- if (exists("avg_gaming_times_per_week", inherits = FALSE)) {
+    avg_gaming_times_per_week
+  } else {
+    rep(NA_real_, n_obs)
+  }
+}
+stopifnot(length(gender) == n_obs, length(avg_gaming_hours_per_day) == n_obs)
+
 paired_complete <- tibble::tibble(
   participant = participant,
+  gender = gender,
+  avg_gaming_hours_per_day = avg_gaming_hours_per_day,
   `duration_sec___numerical` = duration_sec_numerical,
   `duration_sec___spatial-color` = duration_sec_spatial_color,
   `area_off_px2___numerical` = area_off_px2_numerical,
@@ -229,19 +242,6 @@ tt_area <- t.test(
 print(tt_area)
 cat("\n")
 
-cat("Wilcoxon signed-rank, paired = TRUE\n")
-print(wilcox.test(
-  paired_complete$`duration_sec___numerical`,
-  paired_complete$`duration_sec___spatial-color`,
-  paired = TRUE
-))
-print(wilcox.test(
-  paired_complete$`area_off_px2___numerical`,
-  paired_complete$`area_off_px2___spatial-color`,
-  paired = TRUE
-))
-cat("\n")
-
 act_num <- active %>% filter(mode == "numerical")
 act_spa <- active %>% filter(mode == "spatial-color")
 
@@ -369,6 +369,229 @@ p_sa <- ggplot(active, aes(duration_sec, area_off_px2, color = mode)) +
 
 rp(p_sa)
 ggsave(file.path(out_dir, "r_speed_area_scatter.png"), p_sa, width = 7, height = 4.5, dpi = 150)
+
+#gender stuff 
+#maps the gender names to an acc gender (like puts f, female, woman, whatnot) to Women 
+norm_gender_label <- function(g) {
+  g <- tolower(trimws(as.character(g)))
+  dplyr::case_when(
+    g %in% c("f", "female", "woman", "w") ~ "Women",
+    g %in% c("m", "male", "man") ~ "Men",
+    TRUE ~ NA_character_
+  )
+}
+
+#adds factor of gender to the person 
+paired_g <- paired_complete %>%
+  mutate(
+    gender_f = factor(norm_gender_label(.data$gender), levels = c("Women", "Men"))
+  )
+
+#removes people without gender, binds together 
+active_g <- bind_rows(
+  transmute(
+    paired_g,
+    participant,
+    gender_f,
+    mode = "numerical",
+    duration_sec = `duration_sec___numerical`,
+    area_off_px2 = `area_off_px2___numerical`
+  ),
+  transmute(
+    paired_g,
+    participant,
+    gender_f,
+    mode = "spatial-color",
+    duration_sec = `duration_sec___spatial-color`,
+    area_off_px2 = `area_off_px2___spatial-color`
+  )
+) %>%
+  filter(!is.na(.data$gender_f))
+
+if (nrow(active_g) >= 4L) {
+  # Separate geoms + patchwork stack: each row gets a proper y-scale (s vs px²).
+  lab_x <- c("numerical" = "Numerical", "spatial-color" = "Spatial-color")
+  fill_v <- c("numerical" = "#4a36c0", "spatial-color" = "#18a050")
+
+  p_g_time <- ggplot(active_g, aes(mode, duration_sec, fill = mode)) +
+    geom_boxplot(alpha = 0.85, outlier.shape = NA) +
+    geom_jitter(width = 0.12, alpha = 0.7, size = 2) +
+    facet_wrap(vars(gender_f), nrow = 1) +
+    scale_x_discrete(labels = lab_x) +
+    scale_fill_manual(values = fill_v) +
+    labs(title = "Time (s)", x = NULL, y = "Completion time (s)") +
+    theme_bw(base_size = 12) +
+    theme(legend.position = "none", strip.text = element_text(size = 10))
+
+  p_g_area <- ggplot(active_g, aes(mode, area_off_px2, fill = mode)) +
+    geom_boxplot(alpha = 0.85, outlier.shape = NA) +
+    geom_jitter(width = 0.12, alpha = 0.7, size = 2) +
+    facet_wrap(vars(gender_f), nrow = 1) +
+    scale_x_discrete(labels = lab_x) +
+    scale_fill_manual(values = fill_v) +
+    labs(
+      title = "Area off target",
+      x = "Feedback type",
+      y = expression("Area (" * px^2 * ")")
+    ) +
+    theme_bw(base_size = 12) +
+    theme(legend.position = "none", strip.text = element_text(size = 10))
+
+  p_boxes_gender <- (p_g_time / p_g_area) +
+    plot_annotation(
+      title = "Feedback type: time and accuracy (Women vs Men)",
+      theme = theme(plot.title = element_text(face = "bold", size = 13))
+    )
+
+  rp(p_boxes_gender)
+  ggsave(file.path(out_dir, "r_feedback_boxplots_by_gender.png"), p_boxes_gender, width = 8.5, height = 7, dpi = 150)
+
+  p_sa_g <- ggplot(active_g, aes(duration_sec, area_off_px2, color = mode)) +
+    geom_point(size = 2.8, alpha = 0.8) +
+    geom_smooth(method = "lm", se = TRUE, linewidth = 0.6) +
+    facet_wrap(vars(gender_f), ncol = 2) +
+    scale_color_manual(
+      values = c("numerical" = "#4a36c0", "spatial-color" = "#18a050"),
+      labels = c("numerical" = "Numerical", "spatial-color" = "Spatial-color")
+    ) +
+    labs(
+      title = "Speed vs trace error (split by gender)",
+      x = "Completion time (s)",
+      y = expression("Area off target (" * px^2 * ")"),
+      color = "Feedback type"
+    ) +
+    theme_bw(base_size = 12)
+
+  rp(p_sa_g)
+  ggsave(file.path(out_dir, "r_speed_area_scatter_by_gender.png"), p_sa_g, width = 8, height = 4.5, dpi = 150)
+
+  cat(
+    "Saved gender-stratified figures: r_feedback_boxplots_by_gender.png, ",
+    "r_speed_area_scatter_by_gender.png\n",
+    sep = ""
+  )
+} else {
+  message(
+    "Skipping gender-stratified plots: fill participant_demographics.csv with woman/man ",
+    "(or f/m) and rerun build_mie286_vectors.R, or add gender lines to trial CSV exports."
+  )
+}
+
+# Gaming hours: two groups from typical h/day
+hours_vec <- paired_complete$avg_gaming_hours_per_day
+med_game <- stats::median(hours_vec, na.rm = TRUE)
+n_ok_game <- sum(!is.na(hours_vec))
+n_distinct_game <- length(unique(stats::na.omit(hours_vec)))
+
+if (n_ok_game >= 4L && n_distinct_game >= 2L && is.finite(med_game)) {
+  lg <- "Time spent gaming (~0 hours/day)"
+  hg <- "Time spent gaming (>0 hours/day)"
+
+  paired_game <- paired_complete %>%
+    mutate(
+      gaming_f = factor(
+        dplyr::case_when(
+          is.na(.data$avg_gaming_hours_per_day) ~ NA_character_,
+          .data$avg_gaming_hours_per_day <= med_game ~ lg,
+          TRUE ~ hg
+        ),
+        levels = c(lg, hg)
+      )
+    )
+
+  active_game <- bind_rows(
+    transmute(
+      paired_game,
+      participant,
+      gaming_f,
+      mode = "numerical",
+      duration_sec = `duration_sec___numerical`,
+      area_off_px2 = `area_off_px2___numerical`
+    ),
+    transmute(
+      paired_game,
+      participant,
+      gaming_f,
+      mode = "spatial-color",
+      duration_sec = `duration_sec___spatial-color`,
+      area_off_px2 = `area_off_px2___spatial-color`
+    )
+  ) %>%
+    filter(!is.na(.data$gaming_f))
+
+  if (nrow(active_game) >= 4L) {
+    lab_x <- c("numerical" = "Numerical", "spatial-color" = "Spatial-color")
+    fill_v <- c("numerical" = "#4a36c0", "spatial-color" = "#18a050")
+
+    p_game_time <- ggplot(active_game, aes(mode, duration_sec, fill = mode)) +
+      geom_boxplot(alpha = 0.85, outlier.shape = NA) +
+      geom_jitter(width = 0.12, alpha = 0.7, size = 2) +
+      facet_wrap(vars(gaming_f), nrow = 1) +
+      scale_x_discrete(labels = lab_x) +
+      scale_fill_manual(values = fill_v) +
+      labs(title = "Time (s)", x = NULL, y = "Completion time (s)") +
+      theme_bw(base_size = 12) +
+      theme(legend.position = "none", strip.text = element_text(size = 10))
+
+    p_game_area <- ggplot(active_game, aes(mode, area_off_px2, fill = mode)) +
+      geom_boxplot(alpha = 0.85, outlier.shape = NA) +
+      geom_jitter(width = 0.12, alpha = 0.7, size = 2) +
+      facet_wrap(vars(gaming_f), nrow = 1) +
+      scale_x_discrete(labels = lab_x) +
+      scale_fill_manual(values = fill_v) +
+      labs(
+        title = "Area off target",
+        x = "Feedback type",
+        y = expression("Area (" * px^2 * ")")
+      ) +
+      theme_bw(base_size = 12) +
+      theme(legend.position = "none", strip.text = element_text(size = 10))
+
+    p_boxes_game <- (p_game_time / p_game_area) +
+      plot_annotation(
+        title = "Feedback type: time and accuracy (gaming vs non-gaming groups)",
+        subtitle = "Self-reported typical hours playing games per day",
+        theme = theme(
+          plot.title = element_text(face = "bold", size = 13),
+          plot.subtitle = element_text(size = 10)
+        )
+      )
+
+    rp(p_boxes_game)
+    ggsave(file.path(out_dir, "r_feedback_boxplots_by_gaming.png"), p_boxes_game, width = 8.5, height = 7, dpi = 150)
+
+    p_sa_game <- ggplot(active_game, aes(duration_sec, area_off_px2, color = mode)) +
+      geom_point(size = 2.8, alpha = 0.8) +
+      geom_smooth(method = "lm", se = TRUE, linewidth = 0.6) +
+      facet_wrap(vars(gaming_f), ncol = 2) +
+      scale_color_manual(
+        values = c("numerical" = "#4a36c0", "spatial-color" = "#18a050"),
+        labels = c("numerical" = "Numerical", "spatial-color" = "Spatial-color")
+      ) +
+      labs(
+        title = "Speed vs trace error (split by daily gaming hours)",
+        subtitle = "Self-reported typical hours playing games per day",
+        x = "Completion time (s)",
+        y = expression("Area off target (" * px^2 * ")"),
+        color = "Feedback type"
+      ) +
+      theme_bw(base_size = 12)
+
+    rp(p_sa_game)
+    ggsave(file.path(out_dir, "r_speed_area_scatter_by_gaming.png"), p_sa_game, width = 8, height = 4.5, dpi = 150)
+
+    cat(
+      "Saved gaming-stratified figures: r_feedback_boxplots_by_gaming.png, ",
+      "r_speed_area_scatter_by_gaming.png\n",
+      sep = ""
+    )
+  }
+} else {
+  message(
+    "Skipping gaming-stratified plots: need at least 4 non-NA avg_gaming_hours_per_day ",
+    "and 2 distinct values (check participant_demographics / data_mie286.R)."
+  )
+}
 
 cat("Saved figures to ", normalizePath(out_dir, winslash = "/"), "\n", sep = "")
 cat("\nDone!!\n")

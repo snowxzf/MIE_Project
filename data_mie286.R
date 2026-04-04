@@ -28,3 +28,13 @@ area_off_px2_spatial_color <- c(2164.8, 2748.5, 2122, 4449.8, 3437.6, 2911.1, 29
 3257.7, 3330.7, 3969.2, 3724.1, 1913.8, 2285.2, 2725.3, 2341, 
 3154.9, 2572.7, 4137.7, 1935.1, 3394.3, 2105.2, 3223, 2318, 2405.1, 
 3814.5, 2971.5, 2077, 2548.2, 3583, 3264.7, 6143)
+
+gender <- c("man", "man", "woman", "man", "woman", "man", "man", "woman",
+  "woman", "man", "man", "woman", "man", "man", "woman", "woman", "man", "woman",
+  "man", "man", "man", "man", "woman", "woman", "woman", "man", "man", "woman",
+  "woman", "woman", "woman", "woman"
+)
+
+avg_gaming_hours_per_day <- c(0, 0, 0, 4, 0, 1.5, NA_real_, 1.5, 4, 1.5, 1.5, 0, 0, 0, 0,
+  1.5, 0, 1.5, 4, 0, 4, 0, 0, 4, 0, 4, 0, 1.5, 0, 4, 0, 0
+)

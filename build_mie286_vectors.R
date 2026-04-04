@@ -86,6 +86,36 @@ paired_complete <- paired %>%
     !is.na(.data[["area_off_px2___numerical"]]) & !is.na(.data[["area_off_px2___spatial-color"]])
   )
 
+demo_path <- "participant_demographics.csv"
+if (file.exists(demo_path)) {
+  demo <- read.csv(demo_path, stringsAsFactors = FALSE, check.names = FALSE, encoding = "UTF-8")
+  names(demo) <- trimws(names(demo))
+  demo$participant <- trimws(as.character(demo$participant))
+  if (!"gender" %in% names(demo)) demo$gender <- NA_character_
+  if (!"avg_gaming_hours_per_day" %in% names(demo)) {
+    demo$avg_gaming_hours_per_day <- if ("avg_gaming_times_per_week" %in% names(demo)) {
+      suppressWarnings(as.numeric(demo$avg_gaming_times_per_week))
+    } else {
+      NA_real_
+    }
+  } else {
+    demo$avg_gaming_hours_per_day <- suppressWarnings(as.numeric(demo$avg_gaming_hours_per_day))
+  }
+  demo <- demo %>%
+    mutate(gender = dplyr::na_if(trimws(as.character(.data$gender)), "")) %>%
+    distinct(.data$participant, .keep_all = TRUE)
+  paired_complete <- paired_complete %>% dplyr::left_join(demo, by = "participant")
+}
+if (!"gender" %in% names(paired_complete)) paired_complete$gender <- NA_character_
+if (!"avg_gaming_hours_per_day" %in% names(paired_complete)) {
+  paired_complete$avg_gaming_hours_per_day <- suppressWarnings(NA_real_)
+}
+paired_complete <- paired_complete %>%
+  mutate(
+    gender = dplyr::na_if(trimws(as.character(.data$gender)), ""),
+    avg_gaming_hours_per_day = suppressWarnings(as.numeric(.data$avg_gaming_hours_per_day))
+  )
+
 # Anyone with all 3 trial types saved but still missing from paired_complete?
 triple <- trial %>%
   filter(.data$mode %in% c("no-feedback", "numerical", "spatial-color")) %>%
@@ -123,6 +153,10 @@ cat(file = out, "\narea_off_px2_numerical <- ", sep = "")
 dput(paired_complete[["area_off_px2___numerical"]], file = out)
 cat(file = out, "\narea_off_px2_spatial_color <- ", sep = "")
 dput(paired_complete[["area_off_px2___spatial-color"]], file = out)
+cat(file = out, "\ngender <- ", sep = "")
+dput(paired_complete[["gender"]], file = out)
+cat(file = out, "\navg_gaming_hours_per_day <- ", sep = "")
+dput(paired_complete[["avg_gaming_hours_per_day"]], file = out)
 close(out)
 
 message("Wrote data_mie286.R (n = ", nrow(paired_complete), " paired participants)")

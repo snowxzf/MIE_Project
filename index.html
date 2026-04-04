@@ -207,8 +207,45 @@
 
   #download-box {
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+  .download-row1 {
+    display: flex;
     align-items: center;
     gap: 6px;
+  }
+  #download-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: flex-end;
+  }
+  .dl-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.58rem;
+    color: #9090b8;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .dl-meta select,
+  .dl-meta input[type="number"] {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+    border: 1.5px solid #e2e2f0;
+    border-radius: 6px;
+    background: #f7f7fd;
+    color: #5050a0;
+    font-family: inherit;
+    min-width: 6.5rem;
+  }
+  .dl-meta select:focus,
+  .dl-meta input:focus {
+    outline: none;
+    border-color: #a0a0d8;
   }
   #csv-filename {
     background: #f7f7fd;
@@ -293,8 +330,24 @@
     <button class="action-btn" id="btn-reset">New Curve</button>
     <button class="action-btn" id="btn-show" disabled>Show Error</button>
     <div id="download-box">
-      <input type="text" id="csv-filename" placeholder="Filename (e.g. trial_01)" maxlength="64">
-      <button class="action-btn" id="btn-download" disabled>Download CSV</button>
+      <div class="download-row1">
+        <input type="text" id="csv-filename" placeholder="Filename (e.g. trial_01)" maxlength="64">
+        <button class="action-btn" id="btn-download" disabled>Download CSV</button>
+      </div>
+      <div id="download-meta">
+        <label class="dl-meta"><span>Gender (optional)</span>
+          <select id="csv-gender">
+            <option value="">—</option>
+            <option value="woman">Woman</option>
+            <option value="man">Man</option>
+            <option value="nonbinary">Non-binary</option>
+            <option value="prefer_not">Prefer not to say</option>
+          </select>
+        </label>
+        <label class="dl-meta"><span>Avg hours gaming / day</span>
+          <input type="number" id="csv-gaming" min="0" max="24" step="0.25" placeholder="e.g. 1.5">
+        </label>
+      </div>
     </div>
   </div>
 </div>
@@ -658,6 +711,12 @@ function downloadTrialCSV() {
   lines.push('trial,' + trialNumber);
   lines.push('timestamp,' + ts);
   lines.push('mode,' + mode);
+  const gSel = el('csv-gender');
+  const gamingIn = el('csv-gaming');
+  const gVal = (gSel && gSel.value || '').trim();
+  if (gVal) lines.push('gender,' + gVal);
+  const gNum = gamingIn && gamingIn.value != null ? String(gamingIn.value).trim() : '';
+  if (gNum !== '' && !isNaN(Number(gNum))) lines.push('avg_gaming_hours_per_day,' + gNum);
   lines.push('');
 
   lines.push('target_curve');

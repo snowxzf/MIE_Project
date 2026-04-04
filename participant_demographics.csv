@@ -1,0 +1,32 @@
+participant,gender,avg_gaming_hours_per_day,gaming_hours_survey_text,age,biological_sex,engineering_major,colorblind,fine_motor_difficulty,computer_familiarity_raw,computer_familiarity_1to5,timer_stress_raw,timer_stress_1to5
+soham,man,0.0,0 hours (I never/very rarely game),20,Male,Engineering Science Biomedical Systems Engineering,No,Never,3,3.0,4,4.0
+eric,man,0.0,0 hours (I never/very rarely game),19,Male,Engineering Science,No,Never,5,5.0,4,4.0
+srishti,woman,1.5,1-2 hours (maybe dabble it in),20,Female,Aerospace,No,Never,5,5.0,4,4.0
+sumedhaa,woman,0.0,0 hours (I never/very rarely game),19,Female,Engineering Science,No,Rarely,5,5.0,3,3.0
+han,man,0.0,0 hours (I never/very rarely game),19,Male,Engineering Science,No,Never,5,5.0,2,2.0
+pranav,man,0.0,0 hours (I never/very rarely game),20,Male,Engineering Science,No,Yes (daily),3,3.0,1,1.0
+mikeli,man,4.0,3-5 hours (a lot...),20,Male,Eng Sci,No,Never,5,5.0,3,3.0
+alison,woman,1.5,1-2 hours (maybe dabble it in),19,Female,ECE,No,Never,5,5.0,3,3.0
+Derek Chen,man,0.0,0 hours (I never/very rarely game),19,Male,Engineering Science,No,Never,5,5.0,3,3.0
+mani,man,0.0,0 hours (I never/very rarely game),20,Male,Eng Sci,No,Never,4,4.0,3,3.0
+rachel,woman,0.0,0 hours (I never/very rarely game),19,Female,Engineering Science,No,Never,5,5.0,2,2.0
+Ines,woman,0.0,0 hours (I never/very rarely game),19,Female,Engineering Science (EngPhys),No,Never,4,4.0,3,3.0
+yiran,woman,0.0,0 hours (I never/very rarely game),21,Female,Engineering Science - BME,No,Never,5,5.0,2,2.0
+j chen,woman,1.5,1-2 hours (maybe dabble it in),20,Female,Engineering Science,No,Never,5,5.0,3,3.0
+Nareen,woman,0.0,0 hours (I never/very rarely game),20,Female,Engineering Science,No,Occasionally,5,5.0,2,2.0
+lawrence,man,4.0,3-5 hours (a lot...),20,Male,Engsci,No,Never,5,5.0,4,4.0
+Aayush,man,0.0,0 hours (I never/very rarely game),19,Male,Engineering Science,No,Never,5,5.0,3,3.0
+selina,woman,0.0,0 hours (I never/very rarely game),20,Female,ECE,No,Never,4,4.0,5,5.0
+Rahi,man,1.5,1-2 hours (maybe dabble it in),19,Male,EngPhys,No,Occasionally,4,4.0,2,2.0
+katherine,woman,1.5,1-2 hours (maybe dabble it in),19,Female,EngSci,No,Rarely,4,4.0,3,3.0
+vanessa,woman,4.0,3-5 hours (a lot...),19,Female,Engsci,No,Never,5,5.0,3,3.0
+jadon t,man,0.0,0 hours (I never/very rarely game),19,Male,Engineering Science,No,Never,5,5.0,5,5.0
+shiv,man,4.0,3-5 hours (a lot...),19,Male,Robotics,No,Rarely,5,5.0,3,3.0
+robyn,woman,4.0,3-5 hours (a lot...),19,Female,Engineering Science,No,Rarely,5,5.0,3,3.0
+victoria,woman,0.0,0 hours (I never/very rarely game),20,Female,engineering science,No,Never,4,4.0,3,3.0
+bruce,man,1.5,1-2 hours (maybe dabble it in),20,Male,EngSci,No,Never,5,5.0,3,3.0
+heidi,woman,0.0,0 hours (I never/very rarely game),19,Female,Engineering Science,No,Rarely,4,4.0,2,2.0
+emily,woman,0.0,0 hours (I never/very rarely game),19,Female,Engineering Science,No,Never,5,5.0,3,3.0
+david,man,1.5,1-2 hours (maybe dabble it in),19,Male,engsci,No,Never,3,3.0,3,3.0
+belinda,woman,4.0,3-5 hours (a lot...),20,Female,Computer Eng,No,Occasionally,4,4.0,3,3.0
+Michael,man,4.0,3-5 hours (a lot...),19,Male,Engineering Science,No,Never,5,5.0,2,2.0
