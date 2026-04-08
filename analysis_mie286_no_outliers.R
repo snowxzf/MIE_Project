@@ -1,5 +1,12 @@
-# MIE 286 — repeat full analysis after excluding IQR / |z|>3 outliers (same rules as sensitivity).
-# Run from project code/ with data_mie286.R present. Figures: graphs_no_outliers/
+# =============================================================================
+# MIE 286 — full pipeline on outlier-excluded sample only
+# -----------------------------------------------------------------------------
+# Applies mie286_outlier_screen() (Tukey IQR ∪ |z|>3 on 4 levels + paired diffs),
+#   drops flagged rows from paired_complete, rebuilds active, redirects out_dir.
+# Figures and shapiro_wilk_all_strata.csv go to graphs_no_outliers/ (not graphs/).
+# RUN_SENSITIVITY_COMPARE is FALSE (no second sensitivity pass on an already-filtered set).
+# Run: Rscript analysis_mie286_no_outliers.R  (wd = code/)
+# =============================================================================
 
 proj_root <- getwd()
 source(file.path(proj_root, "mie286_outlier_rules.R"))
@@ -18,7 +25,7 @@ if (any(scr$outlier_flag)) {
     paste(paired_complete$participant[scr$outlier_flag], collapse = ", "),
     "\n",
     sep = ""
-)
+  )
 } else {
   cat("Excluded participants: (none)\n")
 }

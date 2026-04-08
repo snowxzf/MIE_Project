@@ -1,4 +1,15 @@
-# Used by analysis_mie286.R sensitivity block and analysis_mie286_no_outliers.R.
+# =============================================================================
+# Outlier screening for MIE 286 sensitivity / no-outliers pipeline
+# -----------------------------------------------------------------------------
+# Sourced from mie286_load_data_and_active.R and used by analysis entry points.
+# Flags a *paired row* (whole participant) if EITHER rule fires on any of six
+#   numeric vectors, all aligned with nrow(paired_complete):
+#   - duration/area for numerical and spatial-color (4 columns)
+#   - diff_time and diff_area = numerical − spatial-color (2 columns)
+# Rule A: Tukey fence outside 1.5×IQR per vector, then OR across vectors.
+# Rule B: |standardized residual| > zmax (default 3) vs column mean/sd.
+# Return value: outlier_flag = iqr_hit | z_hit (union); rowwise OR within rule.
+# =============================================================================
 
 col_iqr_extreme <- function(v) {
   q <- stats::quantile(v, c(0.25, 0.75), na.rm = TRUE, names = FALSE)

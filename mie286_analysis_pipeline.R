@@ -1,6 +1,23 @@
-# Sourced after mie286_load_data_and_active.R defines paired_complete, active, out_dir, rp.
+# =============================================================================
+# MIE 286 analysis pipeline (source only after mie286_load_data_and_active.R)
+# -----------------------------------------------------------------------------
+# Expects: paired_complete, active, out_dir, rp, mie286_print_htest_no_ci
+# Flow: descriptives -> normality (SW/Lilliefors, QQ) -> paired t & r -> optional
+# sensitivity on screened outliers -> box/scatter plots -> gender & gaming strata
+# -> export shapirowilkallstrata.csv -> summary & optional t-density figure.
+# =============================================================================
 if (!exists("RUN_SENSITIVITY_COMPARE", inherits = FALSE)) {
   RUN_SENSITIVITY_COMPARE <- TRUE
+}
+
+if (!exists("mie286_print_htest_no_ci", mode = "function", inherits = TRUE)) {
+  mie286_print_htest_no_ci <- function(x) {
+    y <- x
+    if (inherits(y, "htest") && !is.null(y[["conf.int"]])) {
+      y[["conf.int"]] <- NULL
+    }
+    print(y)
+  }
 }
 
 if (!exists("mie286_outlier_screen", mode = "function", inherits = TRUE)) {
@@ -44,6 +61,7 @@ cat("Descriptive statistics by feedback type\n")
 print(desc_active, width = 120)
 cat("\n")
 
+# --- Normality: long data for histograms / Q-Q / SW+Lilliefors by condition x outcome ---
 # Assumption figures (long format)
 assump <- active %>%
   mutate(
@@ -180,7 +198,7 @@ ggsave(file.path(out_dir, "r_check_qq_plots_2x2.png"), p_qq, width = 8.5, height
 
 cat("Saved: r_check_normality_histograms_2x2.png, r_check_qq_plots_2x2.png\n\n")
 
-# Paired differences
+# --- Paired inference (same participants): numerical minus spatial-colour ---
 diff_time <- paired_complete$`duration_sec___numerical` - paired_complete$`duration_sec___spatial-color`
 diff_area <- paired_complete$`area_off_px2___numerical` - paired_complete$`area_off_px2___spatial-color`
 
@@ -195,13 +213,13 @@ tt_time <- t.test(
   paired_complete$`duration_sec___spatial-color`,
   paired = TRUE
 )
-print(tt_time)
+mie286_print_htest_no_ci(tt_time)
 tt_area <- t.test(
   paired_complete$`area_off_px2___numerical`,
   paired_complete$`area_off_px2___spatial-color`,
   paired = TRUE
 )
-print(tt_area)
+mie286_print_htest_no_ci(tt_area)
 cat("\n")
 
 act_num <- active %>% filter(mode == "numerical")
@@ -209,24 +227,22 @@ act_spa <- active %>% filter(mode == "spatial-color")
 
 cat("Pearson: duration vs area (Numerical)\n")
 cor_num <- cor.test(act_num$duration_sec, act_num$area_off_px2, method = "pearson")
-print(cor_num)
+mie286_print_htest_no_ci(cor_num)
 cat("\nPearson: duration vs area (Spatial-color)\n")
 cor_spa <- cor.test(act_spa$duration_sec, act_spa$area_off_px2, method = "pearson")
-print(cor_spa)
+mie286_print_htest_no_ci(cor_spa)
 cat("\nPearson: Delta time vs Delta area\n")
 cor_delta <- cor.test(diff_time, diff_area, method = "pearson")
-print(cor_delta)
+mie286_print_htest_no_ci(cor_delta)
 cat("\nSpearman (each mode)\n")
-print(cor.test(act_num$duration_sec, act_num$area_off_px2, method = "spearman"))
-print(cor.test(act_spa$duration_sec, act_spa$area_off_px2, method = "spearman"))
+mie286_print_htest_no_ci(cor.test(act_num$duration_sec, act_num$area_off_px2, method = "spearman"))
+mie286_print_htest_no_ci(cor.test(act_spa$duration_sec, act_spa$area_off_px2, method = "spearman"))
 cat("\n")
 
 if (isTRUE(RUN_SENSITIVITY_COMPARE)) {
-# SENSITIVITY ANALYSIS: OUTLIERS 
-# Purpose: robustness of paired t-tests and correlations after removing
-#   participants flagged. Entire participant rows are dropped so paired structure is preserved.
-# Note: Gender/gaming stratified sections later still use the FULL paired_complete.
-# Set to TRUE to write r_feedback_*_no_outliers.png in graphs/
+# --- Sensitivity: recompute key stats after removing IQR/|z|>3-flagged participants ---
+# Optional boxplots written when save_sensitivity_figures is TRUE.
+# Stratified gender/gaming sections below always use the FULL paired_complete.
 save_sensitivity_figures <- TRUE
 
 scr <- mie286_outlier_screen(paired_complete)
@@ -448,7 +464,7 @@ cat(sprintf(
   cor_delta$p.value
 ))
 
-
+# --- Primary figures (full sample): time and area boxplots, speed vs accuracy scatter ---
 p_box <- ggplot(active, aes(mode, duration_sec, fill = mode)) +
   geom_boxplot(alpha = 0.85, outlier.shape = NA) +
   geom_jitter(width = 0.12, alpha = 0.7, size = 2) +
@@ -495,8 +511,8 @@ p_sa <- ggplot(active, aes(duration_sec, area_off_px2, color = mode)) +
 rp(p_sa)
 ggsave(file.path(out_dir, "r_speed_area_scatter.png"), p_sa, width = 7, height = 4.5, dpi = 150)
 
-#gender stuff 
-#maps the gender names to an acc gender (like puts f, female, woman, whatnot) to Women 
+# --- Exploratory gender stratification: Welch t-tests, Q-Q, Pearson within cells ---
+# Map free-text gender to Women/Men; drop unknown for subgroup plots.
 norm_gender_label <- function(g) {
   g <- tolower(trimws(as.character(g)))
   dplyr::case_when(
@@ -506,13 +522,11 @@ norm_gender_label <- function(g) {
   )
 }
 
-#adds factor of gender to the person 
 paired_g <- paired_complete %>%
   mutate(
     gender_f = factor(norm_gender_label(.data$gender), levels = c("Women", "Men"))
   )
 
-#removes people without gender, binds together 
 active_g <- bind_rows(
   transmute(
     paired_g,
@@ -532,6 +546,50 @@ active_g <- bind_rows(
   )
 ) %>%
   filter(!is.na(.data$gender_f))
+
+# Shapiro–Wilk for subgroup vectors (gender/gaming t-tests and correlation inputs)
+shapiro_or_skip_subgroup <- function(x, label) {
+  x <- as.numeric(stats::na.omit(x))
+  n <- length(x)
+  cat(label, " (n = ", n, ")\n", sep = "")
+  if (n >= 3L && n <= 5000L) {
+    print(stats::shapiro.test(x))
+  } else {
+    cat("  Shapiro–Wilk skipped (need 3 ≤ n ≤ 5000)\n")
+  }
+}
+
+## Q-Q points + reference line for faceted normality plots (same logic as main assump QQ)
+mie286_qq_pts_line <- function(data_long, group_cols) {
+  stopifnot("value" %in% names(data_long), all(group_cols %in% names(data_long)))
+  qq_pts <- data_long %>%
+    group_by(across(all_of(group_cols))) %>%
+    group_modify(~ {
+      v <- sort(as.numeric(stats::na.omit(.x$value)))
+      n <- length(v)
+      if (n < 2L) {
+        return(tibble::tibble(theoretical = NA_real_, sample = NA_real_))
+      }
+      tibble::tibble(theoretical = stats::qnorm(stats::ppoints(n)), sample = v)
+    }) %>%
+    ungroup() %>%
+    filter(!is.na(theoretical))
+  qq_line <- data_long %>%
+    group_by(across(all_of(group_cols))) %>%
+    group_modify(~ {
+      v <- sort(as.numeric(stats::na.omit(.x$value)))
+      if (length(v) < 2L) {
+        return(tibble::tibble(intercept = NA_real_, slope = NA_real_))
+      }
+      yq <- stats::quantile(v, c(0.25, 0.75), names = FALSE, type = 7)
+      xq <- stats::qnorm(c(0.25, 0.75))
+      sl <- diff(yq) / diff(xq)
+      tibble::tibble(intercept = yq[1] - sl * xq[1], slope = sl)
+    }) %>%
+    ungroup() %>%
+    filter(!is.na(slope))
+  list(pts = qq_pts, line = qq_line)
+}
 
 if (nrow(active_g) >= 4L) {
   # Separate geoms + patchwork stack: each row gets a proper y-scale (s vs px²).
@@ -590,11 +648,119 @@ if (nrow(active_g) >= 4L) {
   rp(p_sa_g)
   ggsave(file.path(out_dir, "r_speed_area_scatter_by_gender.png"), p_sa_g, width = 8, height = 4.5, dpi = 150)
 
+  assump_g <- active_g %>%
+    mutate(
+      condition = factor(
+        mode,
+        levels = c("numerical", "spatial-color"),
+        labels = c("Numerical", "Spatial-color")
+      )
+    ) %>%
+    transmute(
+      gender_f,
+      condition,
+      `Time (s)` = duration_sec,
+      `Area off target (px^2)` = area_off_px2
+    ) %>%
+    pivot_longer(
+      c(`Time (s)`, `Area off target (px^2)`),
+      names_to = "outcome",
+      values_to = "value"
+    )
+
+  lay_qq_g <- mie286_qq_pts_line(assump_g, c("gender_f", "condition", "outcome"))
+  p_qq_gender <- ggplot(lay_qq_g$pts, aes(theoretical, sample)) +
+    geom_point(alpha = 0.6, na.rm = TRUE) +
+    geom_abline(
+      aes(intercept = intercept, slope = slope),
+      data = lay_qq_g$line,
+      color = "#b22222",
+      linewidth = 0.8,
+      na.rm = TRUE
+    ) +
+    facet_grid(rows = vars(condition, outcome), cols = vars(gender_f), scales = "free") +
+    labs(
+      title = "Q-Q plots by gender (normality within subgroup)",
+      subtitle = "Rows: feedback type and outcome; columns: Women vs Men",
+      x = "Theoretical quantiles",
+      y = "Sample quantiles"
+    ) +
+    theme_bw(base_size = 10) +
+    theme(strip.text = element_text(size = 7.5))
+
+  rp(p_qq_gender)
+  ggsave(file.path(out_dir, "r_check_qq_by_gender.png"), p_qq_gender, width = 9, height = 9, dpi = 150)
+
   cat(
     "Saved gender-stratified figures: r_feedback_boxplots_by_gender.png, ",
-    "r_speed_area_scatter_by_gender.png\n",
+    "r_speed_area_scatter_by_gender.png, r_check_qq_by_gender.png\n",
     sep = ""
   )
+
+  cat("\n--- Hypothesis tests: gender (Women vs Men, exploratory) ---\n")
+  cat("Welch two-sample t: independent participants, H0: equal means.\n")
+  cat("Assumption: outcome roughly normal within each group (Shapiro–Wilk below); Welch is somewhat robust.\n")
+  cat("See group means in output; factor levels are Women, then Men.\n\n")
+  for (md in c("numerical", "spatial-color")) {
+    dg <- active_g %>% dplyr::filter(.data$mode == md)
+    tab_g <- table(dg$gender_f)
+    if (length(tab_g) >= 2L && min(tab_g) >= 2L) {
+      cat("Mode: ", md, " — Shapiro–Wilk normality within gender (duration, s)\n", sep = "")
+      shapiro_or_skip_subgroup(dg$duration_sec[dg$gender_f == "Women"], "  Women")
+      shapiro_or_skip_subgroup(dg$duration_sec[dg$gender_f == "Men"], "  Men")
+      cat("Mode: ", md, " — Welch t duration (s)\n", sep = "")
+      mie286_print_htest_no_ci(stats::t.test(duration_sec ~ gender_f, data = dg, var.equal = FALSE))
+      cat("Mode: ", md, " — Shapiro–Wilk normality within gender (area off target)\n", sep = "")
+      shapiro_or_skip_subgroup(dg$area_off_px2[dg$gender_f == "Women"], "  Women")
+      shapiro_or_skip_subgroup(dg$area_off_px2[dg$gender_f == "Men"], "  Men")
+      cat("Mode: ", md, " — Welch t area (px^2)\n", sep = "")
+      mie286_print_htest_no_ci(stats::t.test(area_off_px2 ~ gender_f, data = dg, var.equal = FALSE))
+      cat("\n")
+    } else {
+      cat("Mode: ", md, " — skipped t-tests (need ≥2 per gender; counts: ", paste(names(tab_g), tab_g, collapse = ", "), ")\n\n", sep = "")
+    }
+  }
+
+  pg <- paired_g %>%
+    dplyr::filter(!is.na(.data$gender_f)) %>%
+    dplyr::mutate(
+      diff_time = `duration_sec___numerical` - `duration_sec___spatial-color`,
+      diff_area = `area_off_px2___numerical` - `area_off_px2___spatial-color`
+    )
+  tab_pg <- table(pg$gender_f)
+  if (length(tab_pg) >= 2L && min(tab_pg) >= 2L) {
+    cat("Participant-level paired difference (numerical − spatial), by gender:\n")
+    cat("Shapiro–Wilk on diff_time within each gender\n")
+    shapiro_or_skip_subgroup(pg$diff_time[pg$gender_f == "Women"], "  Women")
+    shapiro_or_skip_subgroup(pg$diff_time[pg$gender_f == "Men"], "  Men")
+    cat("diff_time (s) — Welch t\n")
+    mie286_print_htest_no_ci(stats::t.test(diff_time ~ gender_f, data = pg, var.equal = FALSE))
+    cat("Shapiro–Wilk on diff_area within each gender\n")
+    shapiro_or_skip_subgroup(pg$diff_area[pg$gender_f == "Women"], "  Women")
+    shapiro_or_skip_subgroup(pg$diff_area[pg$gender_f == "Men"], "  Men")
+    cat("diff_area (px^2) — Welch t\n")
+    mie286_print_htest_no_ci(stats::t.test(diff_area ~ gender_f, data = pg, var.equal = FALSE))
+  } else {
+    cat("Paired difference by gender: skipped (need ≥2 per gender).\n")
+  }
+
+  cat("\nPearson r (time vs area), by gender and feedback mode:\n")
+  cat("(Univariate Shapiro–Wilk on duration and area; Pearson assumes linearity / approximate bivariate normality.)\n")
+  for (gf in c("Women", "Men")) {
+    for (md in c("numerical", "spatial-color")) {
+      dg2 <- active_g %>% dplyr::filter(.data$gender_f == gf, .data$mode == md)
+      if (nrow(dg2) >= 3L) {
+        cat(gf, ", ", md, " — Shapiro–Wilk\n", sep = "")
+        shapiro_or_skip_subgroup(dg2$duration_sec, "  duration (s)")
+        shapiro_or_skip_subgroup(dg2$area_off_px2, "  area (px^2)")
+        cat(gf, ", ", md, " — Pearson correlation\n", sep = "")
+        mie286_print_htest_no_ci(stats::cor.test(dg2$duration_sec, dg2$area_off_px2, method = "pearson"))
+      } else {
+        cat(gf, ", ", md, ": skipped (n < 3)\n", sep = "")
+      }
+    }
+  }
+  cat("\n")
 } else {
   message(
     "Skipping gender-stratified plots: fill participant_demographics.csv with woman/man ",
@@ -602,7 +768,7 @@ if (nrow(active_g) >= 4L) {
   )
 }
 
-# Gaming hours: two groups from typical h/day
+# --- Exploratory gaming split: median h/day into low vs high; Welch t, Q-Q, r ---
 hours_vec <- paired_complete$avg_gaming_hours_per_day
 med_game <- stats::median(hours_vec, na.rm = TRUE)
 n_ok_game <- sum(!is.na(hours_vec))
@@ -705,11 +871,130 @@ if (n_ok_game >= 4L && n_distinct_game >= 2L && is.finite(med_game)) {
     rp(p_sa_game)
     ggsave(file.path(out_dir, "r_speed_area_scatter_by_gaming.png"), p_sa_game, width = 8, height = 4.5, dpi = 150)
 
+    assump_game <- active_game %>%
+      mutate(
+        condition = factor(
+          mode,
+          levels = c("numerical", "spatial-color"),
+          labels = c("Numerical", "Spatial-color")
+        )
+      ) %>%
+      transmute(
+        gaming_f,
+        condition,
+        `Time (s)` = duration_sec,
+        `Area off target (px^2)` = area_off_px2
+      ) %>%
+      pivot_longer(
+        c(`Time (s)`, `Area off target (px^2)`),
+        names_to = "outcome",
+        values_to = "value"
+      )
+
+    lay_qq_game <- mie286_qq_pts_line(assump_game, c("gaming_f", "condition", "outcome"))
+    p_qq_gaming <- ggplot(lay_qq_game$pts, aes(theoretical, sample)) +
+      geom_point(alpha = 0.6, na.rm = TRUE) +
+      geom_abline(
+        aes(intercept = intercept, slope = slope),
+        data = lay_qq_game$line,
+        color = "#b22222",
+        linewidth = 0.8,
+        na.rm = TRUE
+      ) +
+      facet_grid(rows = vars(condition, outcome), cols = vars(gaming_f), scales = "free") +
+      labs(
+        title = "Q-Q plots by gaming group (normality within subgroup)",
+        subtitle = "Median split on self-reported h/day; rows: feedback type and outcome",
+        x = "Theoretical quantiles",
+        y = "Sample quantiles"
+      ) +
+      theme_bw(base_size = 9) +
+      theme(strip.text = element_text(size = 6.5))
+
+    rp(p_qq_gaming)
+    ggsave(file.path(out_dir, "r_check_qq_by_gaming.png"), p_qq_gaming, width = 10, height = 9, dpi = 150)
+
     cat(
       "Saved gaming-stratified figures: r_feedback_boxplots_by_gaming.png, ",
-      "r_speed_area_scatter_by_gaming.png\n",
+      "r_speed_area_scatter_by_gaming.png, r_check_qq_by_gaming.png\n",
       sep = ""
     )
+
+    cat("\n--- Hypothesis tests: gaming (low vs high hours / day, exploratory) ---\n")
+    cat("Groups split at sample median gaming hours.\n")
+    cat("Welch two-sample t, H0: equal means; check Shapiro–Wilk within each gaming group first.\n\n")
+    for (md in c("numerical", "spatial-color")) {
+      dgm <- active_game %>% dplyr::filter(.data$mode == md)
+      tab_m <- table(dgm$gaming_f)
+      if (length(tab_m) >= 2L && min(tab_m) >= 2L) {
+        glev <- levels(dgm$gaming_f)
+        cat("Mode: ", md, " — Shapiro–Wilk normality within gaming group (duration, s)\n", sep = "")
+        for (gl in glev) {
+          shapiro_or_skip_subgroup(dgm$duration_sec[dgm$gaming_f == gl], paste0("  ", gl))
+        }
+        cat("Mode: ", md, " — Welch t duration (s)\n", sep = "")
+        mie286_print_htest_no_ci(stats::t.test(duration_sec ~ gaming_f, data = dgm, var.equal = FALSE))
+        cat("Mode: ", md, " — Shapiro–Wilk normality within gaming group (area)\n", sep = "")
+        for (gl in glev) {
+          shapiro_or_skip_subgroup(dgm$area_off_px2[dgm$gaming_f == gl], paste0("  ", gl))
+        }
+        cat("Mode: ", md, " — Welch t area (px^2)\n", sep = "")
+        mie286_print_htest_no_ci(stats::t.test(area_off_px2 ~ gaming_f, data = dgm, var.equal = FALSE))
+        cat("\n")
+      } else {
+        cat(
+          "Mode: ", md, " — skipped t-tests (need ≥2 per gaming group; counts: ",
+          paste(names(tab_m), tab_m, collapse = ", "), ")\n\n",
+          sep = ""
+        )
+      }
+    }
+
+    pgame <- paired_game %>%
+      dplyr::filter(!is.na(.data$gaming_f)) %>%
+      dplyr::mutate(
+        diff_time = `duration_sec___numerical` - `duration_sec___spatial-color`,
+        diff_area = `area_off_px2___numerical` - `area_off_px2___spatial-color`
+      )
+    tab_pg2 <- table(pgame$gaming_f)
+    if (length(tab_pg2) >= 2L && min(tab_pg2) >= 2L) {
+      cat("Participant-level paired difference (numerical − spatial), by gaming group:\n")
+      glev2 <- levels(pgame$gaming_f)
+      cat("Shapiro–Wilk on diff_time within each gaming group\n")
+      for (gl in glev2) {
+        shapiro_or_skip_subgroup(pgame$diff_time[pgame$gaming_f == gl], paste0("  ", gl))
+      }
+      cat("diff_time (s) — Welch t\n")
+      mie286_print_htest_no_ci(stats::t.test(diff_time ~ gaming_f, data = pgame, var.equal = FALSE))
+      cat("Shapiro–Wilk on diff_area within each gaming group\n")
+      for (gl in glev2) {
+        shapiro_or_skip_subgroup(pgame$diff_area[pgame$gaming_f == gl], paste0("  ", gl))
+      }
+      cat("diff_area (px^2) — Welch t\n")
+      mie286_print_htest_no_ci(stats::t.test(diff_area ~ gaming_f, data = pgame, var.equal = FALSE))
+    } else {
+      cat("Paired difference by gaming group: skipped (need ≥2 per group).\n")
+    }
+
+    cat("\nPearson r (time vs area), by gaming group and feedback mode:\n")
+    cat("(Univariate Shapiro–Wilk on duration and area per subgroup.)\n")
+    lg_lab <- levels(pgame$gaming_f)[1]
+    hg_lab <- levels(pgame$gaming_f)[2]
+    for (gf in c(lg_lab, hg_lab)) {
+      for (md in c("numerical", "spatial-color")) {
+        dgm2 <- active_game %>% dplyr::filter(.data$gaming_f == gf, .data$mode == md)
+        if (nrow(dgm2) >= 3L) {
+          cat(gf, ", ", md, " — Shapiro–Wilk\n", sep = "")
+          shapiro_or_skip_subgroup(dgm2$duration_sec, "  duration (s)")
+          shapiro_or_skip_subgroup(dgm2$area_off_px2, "  area (px^2)")
+          cat(gf, ", ", md, " — Pearson correlation\n", sep = "")
+          mie286_print_htest_no_ci(stats::cor.test(dgm2$duration_sec, dgm2$area_off_px2, method = "pearson"))
+        } else {
+          cat(gf, ", ", md, ": skipped (n < 3)\n", sep = "")
+        }
+      }
+    }
+    cat("\n")
   }
 } else {
   message(
@@ -718,10 +1003,182 @@ if (n_ok_game >= 4L && n_distinct_game >= 2L && is.finite(med_game)) {
   )
 }
 
+# --- Shapiro–Wilk: all strata (console + CSV) ---
+mie286_sw_tbl_row <- function(x) {
+  x <- as.numeric(stats::na.omit(x))
+  nn <- length(x)
+  if (nn < 3L || nn > 5000L) {
+    return(tibble::tibble(
+      n = nn,
+      statistic_W = NA_real_,
+      p_value_SW = NA_real_,
+      note = if (nn < 3L) "n<3" else "n>5000"
+    ))
+  }
+  sw <- stats::shapiro.test(x)
+  tibble::tibble(
+    n = nn,
+    statistic_W = unname(sw$statistic),
+    p_value_SW = sw$p.value,
+    note = NA_character_
+  )
+}
+
+sw_export_parts <- list()
+sw_export_parts[[1]] <- shapiro_by_group %>%
+  dplyr::mutate(
+    layer = "main_condition_outcome",
+    p_value_SW = .data$p_value
+  ) %>%
+  dplyr::select(
+    layer,
+    condition,
+    outcome,
+    n,
+    statistic_W,
+    p_value_SW,
+    statistic_D,
+    p_value_ks
+  )
+
+sw_export_parts[[2]] <- dplyr::bind_rows(
+  dplyr::bind_cols(
+    tibble::tibble(
+      layer = "paired_difference",
+      subgroup = "whole_sample",
+      variable = "diff_time_num_minus_spa"
+    ),
+    mie286_sw_tbl_row(diff_time)
+  ),
+  dplyr::bind_cols(
+    tibble::tibble(
+      layer = "paired_difference",
+      subgroup = "whole_sample",
+      variable = "diff_area_num_minus_spa"
+    ),
+    mie286_sw_tbl_row(diff_area)
+  )
+)
+
+if (exists("active_g", inherits = TRUE) && nrow(active_g) >= 4L) {
+  gr <- list()
+  idx <- 0L
+  for (gf in c("Women", "Men")) {
+    for (md in c("numerical", "spatial-color")) {
+      dg <- active_g %>% dplyr::filter(.data$gender_f == gf, .data$mode == md)
+      idx <- idx + 1L
+      gr[[idx]] <- dplyr::bind_cols(
+        tibble::tibble(
+          layer = "gender_mode",
+          gender = gf,
+          mode = md,
+          variable = "duration_sec"
+        ),
+        mie286_sw_tbl_row(dg$duration_sec)
+      )
+      idx <- idx + 1L
+      gr[[idx]] <- dplyr::bind_cols(
+        tibble::tibble(
+          layer = "gender_mode",
+          gender = gf,
+          mode = md,
+          variable = "area_off_px2"
+        ),
+        mie286_sw_tbl_row(dg$area_off_px2)
+      )
+    }
+  }
+  sw_export_parts[[length(sw_export_parts) + 1L]] <- dplyr::bind_rows(gr)
+
+  pg_sw <- paired_g %>%
+    dplyr::filter(!is.na(.data$gender_f)) %>%
+    dplyr::mutate(
+      diff_time = `duration_sec___numerical` - `duration_sec___spatial-color`,
+      diff_area = `area_off_px2___numerical` - `area_off_px2___spatial-color`
+    )
+  if (nrow(pg_sw) >= 4L && min(table(pg_sw$gender_f)) >= 2L) {
+    gr2 <- list()
+    j <- 0L
+    for (gf in c("Women", "Men")) {
+      j <- j + 1L
+      gr2[[j]] <- dplyr::bind_cols(
+        tibble::tibble(layer = "gender_paired_diff", gender = gf, variable = "diff_time"),
+        mie286_sw_tbl_row(pg_sw$diff_time[pg_sw$gender_f == gf])
+      )
+      j <- j + 1L
+      gr2[[j]] <- dplyr::bind_cols(
+        tibble::tibble(layer = "gender_paired_diff", gender = gf, variable = "diff_area"),
+        mie286_sw_tbl_row(pg_sw$diff_area[pg_sw$gender_f == gf])
+      )
+    }
+    sw_export_parts[[length(sw_export_parts) + 1L]] <- dplyr::bind_rows(gr2)
+  }
+}
+
+if (exists("active_game", inherits = TRUE) && nrow(active_game) >= 4L) {
+  glev_sw <- levels(droplevels(active_game$gaming_f))
+  grg <- list()
+  ig <- 0L
+  for (gl in glev_sw) {
+    for (md in c("numerical", "spatial-color")) {
+      dgm <- active_game %>% dplyr::filter(.data$gaming_f == gl, .data$mode == md)
+      ig <- ig + 1L
+      grg[[ig]] <- dplyr::bind_cols(
+        tibble::tibble(
+          layer = "gaming_mode",
+          gaming_group = as.character(gl),
+          mode = md,
+          variable = "duration_sec"
+        ),
+        mie286_sw_tbl_row(dgm$duration_sec)
+      )
+      ig <- ig + 1L
+      grg[[ig]] <- dplyr::bind_cols(
+        tibble::tibble(
+          layer = "gaming_mode",
+          gaming_group = as.character(gl),
+          mode = md,
+          variable = "area_off_px2"
+        ),
+        mie286_sw_tbl_row(dgm$area_off_px2)
+      )
+    }
+  }
+  sw_export_parts[[length(sw_export_parts) + 1L]] <- dplyr::bind_rows(grg)
+
+  if (exists("pgame", inherits = TRUE) && nrow(pgame) >= 4L && length(table(pgame$gaming_f)) >= 2L &&
+        min(table(pgame$gaming_f)) >= 2L) {
+    glev_p <- levels(pgame$gaming_f)
+    gr3 <- list()
+    k <- 0L
+    for (gl in glev_p) {
+      k <- k + 1L
+      gr3[[k]] <- dplyr::bind_cols(
+        tibble::tibble(layer = "gaming_paired_diff", gaming_group = as.character(gl), variable = "diff_time"),
+        mie286_sw_tbl_row(pgame$diff_time[pgame$gaming_f == gl])
+      )
+      k <- k + 1L
+      gr3[[k]] <- dplyr::bind_cols(
+        tibble::tibble(layer = "gaming_paired_diff", gaming_group = as.character(gl), variable = "diff_area"),
+        mie286_sw_tbl_row(pgame$diff_area[pgame$gaming_f == gl])
+      )
+    }
+    sw_export_parts[[length(sw_export_parts) + 1L]] <- dplyr::bind_rows(gr3)
+  }
+}
+
+shapiro_wilk_all_strata <- dplyr::bind_rows(sw_export_parts)
+shapiro_csv <- file.path(out_dir, "shapiro_wilk_all_strata.csv")
+utils::write.csv(shapiro_wilk_all_strata, shapiro_csv, row.names = FALSE)
+
+cat("\n--- Shapiro–Wilk (all strata) — CSV:\n  ", normalizePath(shapiro_csv, winslash = "/"), "\n", sep = "")
+print(as.data.frame(shapiro_wilk_all_strata), row.names = FALSE, right = FALSE)
+cat("\n")
+
 cat("Saved figures to ", normalizePath(out_dir, winslash = "/"), "\n", sep = "")
 cat("\nDone!!\n")
 
-# --- Summary Statistics Report ---
+# --- Console summary table + illustrative t-density (df fixed at 31; use n_pairs-1 in report) ---
 cat("\n===============================================\n")
 cat("FINAL PERFORMANCE SUMMARY (n =", nrow(paired_complete), ")\n")
 cat("===============================================\n")

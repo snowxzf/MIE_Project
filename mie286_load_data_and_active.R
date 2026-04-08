@@ -1,4 +1,14 @@
-# Shared data load: packages, data_mie286.R, paired_complete, active, default graphs/ out_dir.
+# =============================================================================
+# Shared data load for MIE 286 analysis (sourced by analysis_mie286.R, etc.)
+# -----------------------------------------------------------------------------
+# Working directory must be project code/. This file:
+#   - Loads ggplot2/tidyr/dplyr/patchwork/nortest
+#   - Sources data_mie286.R (vectors: one row per participant, same order)
+#   - Builds paired_complete: wide columns use "___" (e.g. duration_sec___numerical)
+#   - Builds active: long format (2 rows per participant: numerical + spatial-color)
+#   - Sets out_dir = graphs/ and sources mie286_outlier_rules.R
+# Run: never alone; use Rscript analysis_mie286.R or analysis_mie286_no_outliers.R
+# =============================================================================
 
 need <- c("ggplot2", "tidyr", "dplyr", "patchwork", "nortest")
 miss <- need[!vapply(need, requireNamespace, FUN.VALUE = logical(1), quietly = TRUE)]
@@ -13,9 +23,20 @@ suppressPackageStartupMessages({
   library(nortest)
 })
 
+# Print ggplot objects when sourcing the pipeline (side effect for interactive use).
 rp <- function(p) {
   print(p)
   invisible(p)
+}
+
+# Drop conf.int before print so console matches write-up (no 95% CI lines for htest).
+# Use for t.test and cor.test only; keep print() for shapiro.test.
+mie286_print_htest_no_ci <- function(x) {
+  y <- x
+  if (inherits(y, "htest") && !is.null(y[["conf.int"]])) {
+    y[["conf.int"]] <- NULL
+  }
+  print(y)
 }
 
 proj_root <- getwd()
@@ -53,6 +74,7 @@ paired_complete <- tibble::tibble(
   `area_off_px2___spatial-color` = area_off_px2_spatial_color
 )
 
+# Stack each participant's two modes into long format (duration + area per row).
 mie286_rebuild_active <- function(paired_complete) {
   bind_rows(
     transmute(

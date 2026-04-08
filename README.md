@@ -1,79 +1,82 @@
-# MIE 286 Line Tracer — R analysis code
+# MIE 286 Line Tracer — analysis code
 
-R workflow for a **paired** design: each participant has **numerical** vs **spatial-color** feedback. Outcomes are **completion time** (seconds) and **accuracy** (area off target in px²; lower is better).
+R workflow for a **paired** design: each participant has **numerical** vs **spatial-colour** feedback. Outcomes are **completion time** (seconds) and **accuracy** (area off target in px²; lower is better).
 
-Run everything from this directory (`code/`) so paths to `data_mie286.R` and the helper scripts resolve correctly.
+Run scripts from this directory (`code/`) so paths to `data_mie286.R` and helpers resolve correctly. You can open **`MIE_Project.Rproj`** in RStudio to set the working directory automatically.
 
 ## Requirements
-
-Install once in R:
 
 ```r
 install.packages(c("ggplot2", "tidyr", "dplyr", "patchwork", "nortest"))
 ```
 
+**ggplot2**, **tidyr**, **dplyr**, **patchwork**, and **nortest** (Lilliefors / K–S-type normality checks) are required for the main pipeline.
+
 ## Quick start
 
-1. Ensure `data_mie286.R` exists (see below if you need to rebuild it).
-2. Full sample + sensitivity (full vs outlier-restricted comparison):
+1. Ensure **`data_mie286.R`** exists (see **Regenerating the data file** below if not).
+2. **Full sample** (figures in `graphs/`, includes full vs outlier-restricted sensitivity when enabled):
 
    ```bash
    Rscript analysis_mie286.R
    ```
 
-3. Optional: repeat the **entire** analysis after dropping outlier-flagged participants (same rules as the sensitivity block; figures go to a separate folder):
+3. **Outlier-excluded pipeline** — same statistics and figures on the restricted **N** after IQR / \|*z*\|\>3 screening (figures in `graphs_no_outliers/`):
 
    ```bash
    Rscript analysis_mie286_no_outliers.R
    ```
 
-Console output includes descriptive stats, Shapiro–Wilk and Lilliefors normality checks, paired *t*-tests, Pearson/Spearman correlations, plain-language summaries, and gender/gaming stratified plots when demographics are present.
+4. **Q–Q plots only (outlier sample)** — fast rerun of normality figures for the filtered dataset; writes clearly named PNGs under `graphs_no_outliers/` (`qq_outliers_main_2x2.png`, `qq_outliers_by_gender.png`, `qq_outliers_by_gaming.png`):
 
-## Regenerating `data_mie286.R`
+   ```bash
+   Rscript mie286_qq_outliers.R
+   ```
 
-Trial summaries live in `export/trial_metrics_summary.csv`. The build script parses messy duration strings from filenames, pairs numerical vs spatial-color by participant, and writes **`data_mie286.R`** (named vectors used by the analysis).
+Console output includes descriptives, **Shapiro–Wilk** (and Lilliefors where computed), paired *t*-tests, Pearson/Spearman correlations, and gender / gaming stratification when demographics are present.
+
+## Regenerating the data file
+
+Trial summaries live in **`export/trial_metrics_summary.csv`**. **`build_mie286_vectors.R`** pairs numerical vs spatial-colour by participant and writes **`data_mie286.R`** (named vectors for the analysis).
 
 ```bash
 Rscript build_mie286_vectors.R
 ```
 
-Optional demographics can be filled via your pipeline (e.g. `participant_demographics.csv`); missing columns are handled with `NA`s.
+Optional fields (e.g. gender, gaming hours) can be merged via your process; missing columns are handled as `NA`.
 
 ## How the analysis is wired
 
 | File | Role |
 |------|------|
-| `analysis_mie286.R` | Entry point: full sample, runs sensitivity comparison. |
-| `analysis_mie286_no_outliers.R` | Entry point: drop outliers first, then run the same pipeline. |
-| `mie286_load_data_and_active.R` | Loads packages, sources `data_mie286.R`, builds `paired_complete` and `active`, sets default `out_dir`, sources **`mie286_outlier_rules.R`** so outlier helpers always exist after load. |
-| `mie286_outlier_rules.R` | Tukey IQR (1.5×IQR) and \|*z*\|\>3 on four level variables plus paired differences; **union** of rule hits → `mie286_outlier_screen()`. |
-| `mie286_analysis_pipeline.R` | All plots and statistics after data load. Sensitivity block runs only when `RUN_SENSITIVITY_COMPARE` is `TRUE` (default). If `mie286_outlier_screen` is missing, the pipeline tries to source `mie286_outlier_rules.R` from `proj_root` or `getwd()`. |
-| `order_analysis.R` | Separate helper: block order vs paired contrasts (optional). |
+| `analysis_mie286.R` | Entry point: full sample; runs pipeline with sensitivity compare on by default. |
+| `analysis_mie286_no_outliers.R` | Drops outlier-flagged rows, sets `graphs_no_outliers/`, runs the same pipeline. |
+| `mie286_qq_outliers.R` | Optional: load → screen outliers → **only** Q–Q figures (outlier sample). |
+| `mie286_load_data_and_active.R` | Packages, `data_mie286.R`, `paired_complete`, `active`, default `graphs/`; sources `mie286_outlier_rules.R`. |
+| `mie286_outlier_rules.R` | `mie286_outlier_screen()`: Tukey IQR + \|*z*\|\>3 on levels and paired diffs; **union** flags participants. |
+| `mie286_analysis_pipeline.R` | Plots, tests, exports (e.g. `shapiro_wilk_all_strata.csv`). Sensitivity block respects `RUN_SENSITIVITY_COMPARE`. |
+| `post_survey_analysis.R` | Standalone ggplot figures from **aggregated** post-survey counts (preference, learning, sentiment). |
+| `visualize_data.py` | Optional Python tooling for trial / curve visualizations (separate from the main R pipeline). |
 
-## Outlier rules (short version)
+## Outlier rules (short)
 
-A participant row is flagged if **either**:
+A participant is excluded if **either** rule fires on the six screened quantities (four outcome columns and paired `diff_time` / `diff_area`): **IQR** (1.5×IQR tails) or **Z** (\|(*x* − mean)/*sd*\| \> 3), with guards for degenerate *sd*. The whole paired row is removed.
 
-- **IQR:** outside 1.5×IQR on any of the four outcome columns *or* on `diff_time` / `diff_area`, or  
-- **Z-score:** \|(*x* − mean)/*sd*\| \> 3 on those same six quantities,
+The main script keeps the **full** sample for primary stratified plots; **`analysis_mie286_no_outliers.R`** uses only the **restricted** sample throughout.
 
-with **sd** guards so flat data does not explode. Flagged participants are removed **whole row** (paired structure preserved).
+## Outputs
 
-The main script keeps stratified gender/gaming plots on the **full** `paired_complete`; the dedicated no-outliers script uses the **restricted** sample for everything.
+| Location | Contents |
+|----------|-----------|
+| `graphs/` | Figures from **`analysis_mie286.R`** (boxplots, scatters, Q–Q, etc.). May include sensitivity comparison figures when enabled. |
+| `graphs_no_outliers/` | Figures from **`analysis_mie286_no_outliers.R`** and from **`mie286_qq_outliers.R`** (including `qq_outliers_*.png`). |
+| `graphs/shapiro_wilk_all_strata.csv` | Shapiro–Wilk *W* and *p* (and related fields) for main, gender, gaming, and paired-difference strata (**full** sample). |
+| `graphs_no_outliers/shapiro_wilk_all_strata.csv` | Same structure after outlier exclusion (regenerate with the no-outliers script). |
 
-## Output folders
+## Paired *t*-tests and *df*
 
-| Run | Figures |
-|-----|--------|
-| `analysis_mie286.R` | `graphs/` |
-| `analysis_mie286_no_outliers.R` | `graphs_no_outliers/` |
-
-The main run can also write `r_feedback_*_no_outliers.png` into `graphs/` when sensitivity figures are enabled.
-
-## Paired *t*-tests and the *t*-distribution figure
-
-Paired tests use differences within participant; the script at the bottom that plots a *t* curve with **df = 31** is illustrative for a fixed *n* — your actual degrees of freedom for a paired test are `n_pairs - 1` for the sample you analyzed.
+Paired tests use **within-participant** differences. Effective *df* is **n_pairs − 1** for the sample you analyze (31 with **N = 32**, 27 with **N = 28**). Any illustrative *t*-density plot with a fixed *df* in the repo is for teaching / visualization only unless it matches your current **n**.
 
 ---
 
-*If something says “could not find `mie286_outlier_screen`”, set your working directory to this `code/` folder (or open the project there) and run `analysis_mie286.R` / `analysis_mie286_no_outliers.R` from the top.*
+*If you see **could not find `mie286_outlier_screen`**, set the working directory to this **`code/`** folder (or use the `.Rproj`) and run the entry-point scripts from there.*
