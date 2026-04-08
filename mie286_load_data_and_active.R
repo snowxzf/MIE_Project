@@ -2,7 +2,7 @@
 # Shared data load for MIE 286 analysis (sourced by analysis_mie286.R, etc.)
 # -----------------------------------------------------------------------------
 # Working directory must be project code/. This file:
-#   - Loads ggplot2/tidyr/dplyr/patchwork/nortest
+#   - Loads ggplot2/tidyr/dplyr/patchwork
 #   - Sources data_mie286.R (vectors: one row per participant, same order)
 #   - Builds paired_complete: wide columns use "___" (e.g. duration_sec___numerical)
 #   - Builds active: long format (2 rows per participant: numerical + spatial-color)
@@ -10,7 +10,7 @@
 # Run: never alone; use Rscript analysis_mie286.R or analysis_mie286_no_outliers.R
 # =============================================================================
 
-need <- c("ggplot2", "tidyr", "dplyr", "patchwork", "nortest")
+need <- c("ggplot2", "tidyr", "dplyr", "patchwork")
 miss <- need[!vapply(need, requireNamespace, FUN.VALUE = logical(1), quietly = TRUE)]
 if (length(miss)) {
   stop("Install: install.packages(c(", paste0('"', miss, '"', collapse = ", "), "))")
@@ -20,7 +20,6 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(dplyr)
   library(patchwork)
-  library(nortest)
 })
 
 # Print ggplot objects when sourcing the pipeline (side effect for interactive use).

@@ -1,31 +1,31 @@
-"layer","condition","outcome","n","statistic_W","p_value_SW","statistic_D","p_value_ks","subgroup","variable","note","gender","mode","gaming_group"
-"main_condition_outcome","Condition 1: Numerical","Area off target (px^2)",32,0.954610681255529,0.194582543755121,0.168576337024777,0.0212795232651591,NA,NA,NA,NA,NA,NA
-"main_condition_outcome","Condition 1: Numerical","Time (s)",32,0.927249662977802,0.0328479398832202,0.129791477897676,0.185297577898018,NA,NA,NA,NA,NA,NA
-"main_condition_outcome","Condition 2: Spatial-color","Area off target (px^2)",32,0.894116862138883,0.00440144209209771,0.103296427769145,0.520318586225559,NA,NA,NA,NA,NA,NA
-"main_condition_outcome","Condition 2: Spatial-color","Time (s)",32,0.937765142551199,0.0647099255809446,0.143616181069418,0.0915873709914424,NA,NA,NA,NA,NA,NA
-"paired_difference",NA,NA,32,0.959284178727997,0.262533042145697,NA,NA,"whole_sample","diff_time_num_minus_spa",NA,NA,NA,NA
-"paired_difference",NA,NA,32,0.932226670866371,0.045191701831561,NA,NA,"whole_sample","diff_area_num_minus_spa",NA,NA,NA,NA
-"gender_mode",NA,NA,16,0.932896118257141,0.27085240176778,NA,NA,NA,"duration_sec",NA,"Women","numerical",NA
-"gender_mode",NA,NA,16,0.959616348875415,0.654831690062896,NA,NA,NA,"area_off_px2",NA,"Women","numerical",NA
-"gender_mode",NA,NA,16,0.934301291053466,0.284948416680141,NA,NA,NA,"duration_sec",NA,"Women","spatial-color",NA
-"gender_mode",NA,NA,16,0.778723402307899,0.00144059892271958,NA,NA,NA,"area_off_px2",NA,"Women","spatial-color",NA
-"gender_mode",NA,NA,15,0.931536698808514,0.287659732208499,NA,NA,NA,"duration_sec",NA,"Men","numerical",NA
-"gender_mode",NA,NA,15,0.913405895887692,0.152710110076549,NA,NA,NA,"area_off_px2",NA,"Men","numerical",NA
-"gender_mode",NA,NA,15,0.919138765561239,0.186892031183257,NA,NA,NA,"duration_sec",NA,"Men","spatial-color",NA
-"gender_mode",NA,NA,15,0.943100891008876,0.422965941628095,NA,NA,NA,"area_off_px2",NA,"Men","spatial-color",NA
-"gender_paired_diff",NA,NA,16,0.916345595640548,0.147295515306863,NA,NA,NA,"diff_time",NA,"Women",NA,NA
-"gender_paired_diff",NA,NA,16,0.831551459078046,0.00737765573061502,NA,NA,NA,"diff_area",NA,"Women",NA,NA
-"gender_paired_diff",NA,NA,15,0.961977728510147,0.726726191326879,NA,NA,NA,"diff_time",NA,"Men",NA,NA
-"gender_paired_diff",NA,NA,15,0.987126672914235,0.996973463934588,NA,NA,NA,"diff_area",NA,"Men",NA,NA
-"gaming_mode",NA,NA,17,0.951110330546705,0.474317320318802,NA,NA,NA,"duration_sec",NA,NA,"numerical","Time spent gaming (~0 hours/day)"
-"gaming_mode",NA,NA,17,0.92862218098358,0.206379617761823,NA,NA,NA,"area_off_px2",NA,NA,"numerical","Time spent gaming (~0 hours/day)"
-"gaming_mode",NA,NA,17,0.974319980788487,0.888675436814025,NA,NA,NA,"duration_sec",NA,NA,"spatial-color","Time spent gaming (~0 hours/day)"
-"gaming_mode",NA,NA,17,0.778492734205405,0.00104424015708754,NA,NA,NA,"area_off_px2",NA,NA,"spatial-color","Time spent gaming (~0 hours/day)"
-"gaming_mode",NA,NA,14,0.891763751401313,0.0857076221860019,NA,NA,NA,"duration_sec",NA,NA,"numerical","Time spent gaming (>0 hours/day)"
-"gaming_mode",NA,NA,14,0.966520825546474,0.827008299808909,NA,NA,NA,"area_off_px2",NA,NA,"numerical","Time spent gaming (>0 hours/day)"
-"gaming_mode",NA,NA,14,0.863016298390313,0.0335209255392507,NA,NA,NA,"duration_sec",NA,NA,"spatial-color","Time spent gaming (>0 hours/day)"
-"gaming_mode",NA,NA,14,0.969087990725948,0.864218612416763,NA,NA,NA,"area_off_px2",NA,NA,"spatial-color","Time spent gaming (>0 hours/day)"
-"gaming_paired_diff",NA,NA,17,0.970521209551149,0.827518974221825,NA,NA,NA,"diff_time",NA,NA,NA,"Time spent gaming (~0 hours/day)"
-"gaming_paired_diff",NA,NA,17,0.86061398735783,0.0156338687657797,NA,NA,NA,"diff_area",NA,NA,NA,"Time spent gaming (~0 hours/day)"
-"gaming_paired_diff",NA,NA,14,0.907844317221711,0.146622898394792,NA,NA,NA,"diff_time",NA,NA,NA,"Time spent gaming (>0 hours/day)"
-"gaming_paired_diff",NA,NA,14,0.980779231199179,0.979070220033524,NA,NA,NA,"diff_area",NA,NA,NA,"Time spent gaming (>0 hours/day)"
+"layer","condition","outcome","n","statistic_W","p_value_SW","subgroup","variable","note","gender","mode","gaming_group"
+"main_condition_outcome","Condition 1: Numerical","Area off target (px^2)",32,0.954610681255529,0.194582543755121,NA,NA,NA,NA,NA,NA
+"main_condition_outcome","Condition 1: Numerical","Time (s)",32,0.927249662977802,0.0328479398832202,NA,NA,NA,NA,NA,NA
+"main_condition_outcome","Condition 2: Spatial-color","Area off target (px^2)",32,0.894116862138883,0.00440144209209771,NA,NA,NA,NA,NA,NA
+"main_condition_outcome","Condition 2: Spatial-color","Time (s)",32,0.937765142551199,0.0647099255809446,NA,NA,NA,NA,NA,NA
+"paired_difference",NA,NA,32,0.959284178727997,0.262533042145697,"whole_sample","diff_time_num_minus_spa",NA,NA,NA,NA
+"paired_difference",NA,NA,32,0.932226670866371,0.045191701831561,"whole_sample","diff_area_num_minus_spa",NA,NA,NA,NA
+"gender_mode",NA,NA,16,0.932896118257141,0.27085240176778,NA,"duration_sec",NA,"Women","numerical",NA
+"gender_mode",NA,NA,16,0.959616348875415,0.654831690062896,NA,"area_off_px2",NA,"Women","numerical",NA
+"gender_mode",NA,NA,16,0.934301291053466,0.284948416680141,NA,"duration_sec",NA,"Women","spatial-color",NA
+"gender_mode",NA,NA,16,0.778723402307899,0.00144059892271958,NA,"area_off_px2",NA,"Women","spatial-color",NA
+"gender_mode",NA,NA,15,0.931536698808514,0.287659732208499,NA,"duration_sec",NA,"Men","numerical",NA
+"gender_mode",NA,NA,15,0.913405895887692,0.152710110076549,NA,"area_off_px2",NA,"Men","numerical",NA
+"gender_mode",NA,NA,15,0.919138765561239,0.186892031183257,NA,"duration_sec",NA,"Men","spatial-color",NA
+"gender_mode",NA,NA,15,0.943100891008876,0.422965941628095,NA,"area_off_px2",NA,"Men","spatial-color",NA
+"gender_paired_diff",NA,NA,16,0.916345595640548,0.147295515306863,NA,"diff_time",NA,"Women",NA,NA
+"gender_paired_diff",NA,NA,16,0.831551459078046,0.00737765573061502,NA,"diff_area",NA,"Women",NA,NA
+"gender_paired_diff",NA,NA,15,0.961977728510147,0.726726191326879,NA,"diff_time",NA,"Men",NA,NA
+"gender_paired_diff",NA,NA,15,0.987126672914235,0.996973463934588,NA,"diff_area",NA,"Men",NA,NA
+"gaming_mode",NA,NA,17,0.951110330546705,0.474317320318802,NA,"duration_sec",NA,NA,"numerical","Time spent gaming (~0 hours/day)"
+"gaming_mode",NA,NA,17,0.92862218098358,0.206379617761823,NA,"area_off_px2",NA,NA,"numerical","Time spent gaming (~0 hours/day)"
+"gaming_mode",NA,NA,17,0.974319980788487,0.888675436814025,NA,"duration_sec",NA,NA,"spatial-color","Time spent gaming (~0 hours/day)"
+"gaming_mode",NA,NA,17,0.778492734205405,0.00104424015708754,NA,"area_off_px2",NA,NA,"spatial-color","Time spent gaming (~0 hours/day)"
+"gaming_mode",NA,NA,14,0.891763751401313,0.0857076221860019,NA,"duration_sec",NA,NA,"numerical","Time spent gaming (>0 hours/day)"
+"gaming_mode",NA,NA,14,0.966520825546474,0.827008299808909,NA,"area_off_px2",NA,NA,"numerical","Time spent gaming (>0 hours/day)"
+"gaming_mode",NA,NA,14,0.863016298390313,0.0335209255392507,NA,"duration_sec",NA,NA,"spatial-color","Time spent gaming (>0 hours/day)"
+"gaming_mode",NA,NA,14,0.969087990725948,0.864218612416763,NA,"area_off_px2",NA,NA,"spatial-color","Time spent gaming (>0 hours/day)"
+"gaming_paired_diff",NA,NA,17,0.970521209551149,0.827518974221825,NA,"diff_time",NA,NA,NA,"Time spent gaming (~0 hours/day)"
+"gaming_paired_diff",NA,NA,17,0.86061398735783,0.0156338687657797,NA,"diff_area",NA,NA,NA,"Time spent gaming (~0 hours/day)"
+"gaming_paired_diff",NA,NA,14,0.907844317221711,0.146622898394792,NA,"diff_time",NA,NA,NA,"Time spent gaming (>0 hours/day)"
+"gaming_paired_diff",NA,NA,14,0.980779231199179,0.979070220033524,NA,"diff_area",NA,NA,NA,"Time spent gaming (>0 hours/day)"

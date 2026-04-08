@@ -2,7 +2,7 @@
 # MIE 286 analysis pipeline (source only after mie286_load_data_and_active.R)
 # -----------------------------------------------------------------------------
 # Expects: paired_complete, active, out_dir, rp, mie286_print_htest_no_ci
-# Flow: descriptives -> normality (SW/Lilliefors, QQ) -> paired t & r -> optional
+# Flow: descriptives -> normality (Shapiro–Wilk, QQ) -> paired t & r -> optional
 # sensitivity on screened outliers -> box/scatter plots -> gender & gaming strata
 # -> export shapirowilkallstrata.csv -> summary & optional t-density figure.
 # =============================================================================
@@ -61,7 +61,7 @@ cat("Descriptive statistics by feedback type\n")
 print(desc_active, width = 120)
 cat("\n")
 
-# --- Normality: long data for histograms / Q-Q / SW+Lilliefors by condition x outcome ---
+# --- Normality: long data for histograms / Q-Q; Shapiro–Wilk by condition x outcome ---
 # Assumption figures (long format)
 assump <- active %>%
   mutate(
@@ -81,11 +81,9 @@ assump <- active %>%
   ) %>%
   pivot_longer(-condition, names_to = "outcome", values_to = "value")
 
-# Lilliefors = K-S-type normality test with mean & SD estimated from the sample;
-# avoids invalid p-values from stats::ks.test(..., mean = mean(x), sd = sd(x)).
 cat(
-  "Normality by condition x outcome: Shapiro–Wilk + Lilliefors (K–S type); ",
-  "paired t-tests use difference normality below\n",
+  "Normality by condition x outcome: Shapiro–Wilk; ",
+  "paired t-tests use Shapiro–Wilk on difference scores below\n",
   sep = ""
 )
 shapiro_by_group <- assump %>%
@@ -95,24 +93,15 @@ shapiro_by_group <- assump %>%
     n <- length(v)
     statistic_W <- NA_real_
     p_value <- NA_real_
-    statistic_D <- NA_real_
-    p_value_ks <- NA_real_
     if (n >= 3L && n <= 5000L) {
       sw <- stats::shapiro.test(v)
       statistic_W <- unname(sw$statistic)
       p_value <- sw$p.value
     }
-    if (n >= 4L && n <= 5000L) {
-      lil <- nortest::lillie.test(v)
-      statistic_D <- unname(lil$statistic)
-      p_value_ks <- lil$p.value
-    }
     tibble::tibble(
       n = n,
       statistic_W = statistic_W,
-      p_value = p_value,
-      statistic_D = statistic_D,
-      p_value_ks = p_value_ks
+      p_value = p_value
     )
   }) %>%
   ungroup()
@@ -1036,9 +1025,7 @@ sw_export_parts[[1]] <- shapiro_by_group %>%
     outcome,
     n,
     statistic_W,
-    p_value_SW,
-    statistic_D,
-    p_value_ks
+    p_value_SW
   )
 
 sw_export_parts[[2]] <- dplyr::bind_rows(

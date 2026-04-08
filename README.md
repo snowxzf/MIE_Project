@@ -7,10 +7,10 @@ Run scripts from this directory (`code/`) so paths to `data_mie286.R` and helper
 ## Requirements
 
 ```r
-install.packages(c("ggplot2", "tidyr", "dplyr", "patchwork", "nortest"))
+install.packages(c("ggplot2", "tidyr", "dplyr", "patchwork"))
 ```
 
-**ggplot2**, **tidyr**, **dplyr**, **patchwork**, and **nortest** (Lilliefors / K–S-type normality checks) are required for the main pipeline.
+**ggplot2**, **tidyr**, **dplyr**, and **patchwork** are required for the main pipeline.
 
 ## Quick start
 
@@ -33,7 +33,7 @@ install.packages(c("ggplot2", "tidyr", "dplyr", "patchwork", "nortest"))
    Rscript mie286_qq_outliers.R
    ```
 
-Console output includes descriptives, **Shapiro–Wilk** (and Lilliefors where computed), paired *t*-tests, Pearson/Spearman correlations, and gender / gaming stratification when demographics are present.
+Console output includes descriptives, **Shapiro–Wilk** normality checks, paired *t*-tests, Pearson/Spearman correlations, and gender / gaming stratification when demographics are present.
 
 ## Regenerating the data file
 
