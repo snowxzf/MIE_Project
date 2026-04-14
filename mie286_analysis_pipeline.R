@@ -196,17 +196,19 @@ if (length(diff_time) >= 3 && length(diff_time) <= 5000) print(shapiro.test(diff
 if (length(diff_area) >= 3 && length(diff_area) <= 5000) print(shapiro.test(diff_area))
 cat("\n")
 
-cat("Paired t-tests (two-tailed)\n")
+cat("Paired t-tests (one-tailed; directional hypotheses)\n")
 tt_time <- t.test(
   paired_complete$`duration_sec___numerical`,
   paired_complete$`duration_sec___spatial-color`,
-  paired = TRUE
+  paired = TRUE,
+  alternative = "greater" # H2.1: numerical time > spatial-color time
 )
 mie286_print_htest_no_ci(tt_time)
 tt_area <- t.test(
   paired_complete$`area_off_px2___numerical`,
   paired_complete$`area_off_px2___spatial-color`,
-  paired = TRUE
+  paired = TRUE,
+  alternative = "less" # H2.2: numerical area < spatial-color area
 )
 mie286_print_htest_no_ci(tt_area)
 cat("\n")
@@ -265,12 +267,14 @@ if (n_sens < 3L) {
   tt_time_sens <- t.test(
     paired_complete_sens$`duration_sec___numerical`,
     paired_complete_sens$`duration_sec___spatial-color`,
-    paired = TRUE
+    paired = TRUE,
+    alternative = "greater" # H2.1
   )
   tt_area_sens <- t.test(
     paired_complete_sens$`area_off_px2___numerical`,
     paired_complete_sens$`area_off_px2___spatial-color`,
-    paired = TRUE
+    paired = TRUE,
+    alternative = "less" # H2.2
   )
 
   active_sens <- bind_rows(
@@ -406,7 +410,7 @@ if (abs(md_t) < 1e-9) {
   ))
 }
 cat(sprintf(
-  "Paired t-test two-tailed p = %.4f%s\n",
+  "Paired t-test one-tailed p = %.4f%s\n",
   p_t,
   if (p_t < 0.05) " (reject equal means at alpha = .05)." else " (not significant at alpha = .05)."
 ))
@@ -427,7 +431,7 @@ if (abs(md_a) < 1e-6) {
   ))
 }
 cat(sprintf(
-  "Paired t-test two-tailed p = %.4f%s\n",
+  "Paired t-test one-tailed p = %.4f%s\n",
   p_a,
   if (p_a < 0.05) " (reject equal means at alpha = .05)." else " (not significant at alpha = .05)."
 ))

@@ -1,0 +1,707 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[bitstream-charter]{mathdesign}
+\raggedbottom
+\usepackage{comment}
+\usepackage{multirow}
+\usepackage{anysize}%Paquete que permite cambiar márgenes
+\usepackage{titlesec}
+\usepackage{booktabs}
+\setlength{\textfloatsep}{10pt}   % space between figure and text
+\usepackage{cprotect}
+\setlength{\intextsep}{10pt}      % space for in-text floats
+% \titlespacing{command}{left}{before-spacing}{after-spacing}
+\titlespacing*{\section}{0pt}{12pt}{0pt}
+\marginsize{1cm}{1cm}{1cm}{1cm}
+\usepackage{amsmath}%Paquete para insertar símbolos matemáticos
+\usepackage{hyperref}%Paquete para insertar referencias en el texto
+\usepackage{setspace}
+\setstretch{1.5}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{textcomp,gensymb}
+\usepackage{float}%Paquete para tratar figuras y tablas como flotantes
+\usepackage{lipsum}%Paquete para insertar texto mudo
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{multirow}
+\pagestyle{fancy}
+\usepackage{subcaption}
+\usepackage{indentfirst}
+\setlength{\parskip}{1pt}
+\usepackage{cite}
+\usepackage{url}%Paquete para insertar URL's
+\usepackage{multicol}%Paquete para crear ambientes multicolumna
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+\titleformat*{\subsubsection}{\normalsize\itshape}
+
+\setlength\columnsep{10pt}%Especifíca separación de las columnas
+\renewenvironment{abstract}%Modifica el ambientes abstract para modificar la alineación
+ {\par\noindent\textbf{\abstractname}\ \ignorespaces \\}
+ {\par\noindent\medskip}
+
+% Custom title formatting
+\makeatletter
+\def\maketitle{
+    \begin{flushleft}
+        {\LARGE \textbf{Investigating the Effects of Feedback Modality on Compensatory Tracking Performance for Remote Surgery Applications}}\\[1cm]
+
+        {\large Jessica Fu$^\dagger$, Sara Parvaresh Rizi$^\ddagger$, and Aarya Shah$^\P$}\\[0.5cm]
+
+        {\small
+        $^\dagger$ jessica.fu1@mail.utoronto.ca | 1011048607\\
+        $^\ddagger$ s.parvareshrizi@mail.utoronto.ca | 1010913451\\
+        $^\P$ aarya.shah@mail.utoronto.ca | 1010871157
+        }
+    \end{flushleft}
+}
+\makeatother
+%-----------------------------------------------------------------------------------------------------------------------------------------
+\fancyhf{} % clear everything
+\fancypagestyle{firstpage}{
+    \fancyhf{}
+    \fancyhead[L]{\small MIE 286 Final Report: Compensatory Tracking Performance}
+    \fancyhead[R]{\includegraphics[width=2.5cm]{uoft.png}}
+    \fancyfoot[C]{\thepage}
+    \renewcommand{\headrulewidth}{0.4pt}
+}
+\fancyhead[L]{\small Final Report: Compensatory Tracking Performance}
+\fancyhead[R]{\small University of Toronto}
+\fancyfoot[C]{\thepage}
+
+\renewcommand{\headrulewidth}{0.4pt} % line under header
+\begin{document}
+\raggedbottom
+\maketitle 
+\thispagestyle{firstpage}
+%-----------------------------------------------------------------------------------------------------------------------------------------
+\noindent\rule{\textwidth}{0.4pt}
+\begin{spacing}{1.15}
+\begin{abstract}
+In remote surgery applications, the loss of direct haptic feedback necessitates sensory substitution to convey critical information such as instrument depth \cite{bethea2004haptic}. This study compares symbolic "numerical" (Level A) and sensory "spatial-colour" (Level B) visual feedback on compensatory tracking performance within the context of Robot-Assisted Minimally Invasive Surgery (RAMIS). Using a sample of 32 participants, performance was quantified through completion runtime and accuracy (pixel area deviation). 
+
+While initial analyses ($N=32$) showed that participants were 8.55s faster on average with spatial-colour feedback, this result was statistically significant under the directional one-tailed test ($p = 0.0293$ for time). Accuracy was not significantly better for numerical feedback under its directional one-tailed test ($p = 0.6005$), and the observed mean difference was opposite to \textbf{Hypothesis 2.2} (numerical had 27.9~$px^2$ larger area off target on average). A sensitivity analysis ($N=28$) omitting four technical outliers similarly showed a statistically significant speed advantage of 8.14s for spatial-colour feedback ($p = 0.0165$), while the accuracy-direction hypothesis remained unsupported ($p = 0.9054$). Qualitative survey data indicated that the high cognitive load required to decode symbolic numerical data was perceived as "distracting" and "mentally taxing," negating its theoretical precision benefit. Furthermore, a strong negative correlation ($r \approx -0.75$) confirmed a robust speed-accuracy trade-off across both modalities. Analysis of gender and video-gaming covariates showed no significant differences in mean performance, though video gamers demonstrated a more pronounced speed-accuracy trade-off and reported higher utility for spatial-colour cues. These findings suggest that surgical robotic interfaces should prioritize pre-attentive sensory-spatial cues to minimize operator lag time while maximizing accuracy.
+
+\noindent \textbf{Github Repository:} \url{https://github.com/snowxzf/MIE_Project}
+\end{abstract}
+\end{spacing}
+\noindent\rule{\textwidth}{0.4pt}
+
+
+\clearpage
+%-----------------------------------------------------------------------------------------------------------------------------------------
+\begin{multicols}{2} 
+
+%------------------------------------------------------------------------
+\section{Introduction}
+
+Cognitive ergonomics and workload relate to the ability to process sensory input, such as sight, sound, and touch, into motor responses and 'working memory' to complete tasks \cite {shingwaiwong_2024_cognitive}. Surgeons performing high-precision tasks like robotic surgeries use cognitive training with "cognition to integration to autonomous" learning stages. Here, the brain consistently applies conscious understanding into deliberate motor execution until using little monitoring as the surgeon reaches an 'autonomous' stage\cite{motorlearning}. 
+
+In Robot-Assisted Minimally Invasive Surgery (RAMIS), the physical separation between the surgeon and the patient disrupts direct haptic (touch) feedback\cite{friebe_2025_palpation}. This absence of tactile information necessitates sensory substitution, where critical data like instrument depth must be translated into visual cues. While cognitive ergonomics research has explored how workload affects performance, there is a lack of comparative data on which visual modalities most effectively bridge this 'depth-sensing' gap \cite{kitagawa_2005_effect,liu_2021_a} by optimizing accuracy while minimizing lag time, making our research both novel and significant. 
+
+This begets the question:  \textit{How do Symbolic (Level A) and Sensory (Level B) feedback modalities compare in accuracy and runtime when performing a continuous tracking task, simulating surgery?}
+
+Symbolic feedback uses characters like Arabic numerals, relying on foveal vision and ”semantic interpretation,” thus requiring more working memory and focal attention. This often causes ”in-attentional blindness”\cite{cai_2022_attention, estudillo_2025_exploring}. Meanwhile, sensory feedback uses spatial-colour gradients, which target the peripheral vision, excelling at pre-attentive motion and colour detecting\cite{interactiondesignfoundation_2019_preattentive}. Visual metrics were prioritized for their efficacy in surgeries, as acoustic factors are more distracting \cite{distraction}, and  90\% of feedback to the brain is visual\cite{90brain}, making it more accessible. Spatial-colour and numerical feedback are distinct, yet immensely popular as they compare qualitative and quantitative feedback\cite{quantvqual,subjective}. Numbers best and most accurately quantify trends and compare to a baseline, whereas spatial-colour uses selective attention, processing 60 000 times faster than text and reducing cognitive load compared to reading numbers\cite{90brain}.
+
+This report highlights the methods and biases, alongside course concepts used to analyze and infer the influence of covariants on data. The result implications were applied to a surgical application. 
+
+
+
+%--------------------------------------------------------------------------------
+\section{Methodology} \label{methods}
+The independent variables are the two feedback modalities, namely Level A and Level B feedback. The dependent variables that will be tested are runtime (time taken to complete the task) and accuracy (how close the individuals were to the line). Accuracy will be measured by calculating the area bounded between the drawn curve and the target curve. 
+This section highlights our key design decisions, biases and limitations in performing this study. 
+\subsection{Participants and Sampling} \label{people}
+A sample size of 32 University of Toronto (UofT) second-year Engineering Science (EngSci) students were taken to perform this experiment: 16 Females and 16 Males between ages 19 to 21. To mitigate potential order effects and task habituation, a counterbalanced experimental design was employed \cite{albudaiwi2018sage}. Within each gender cohort ($N=16$), participants were equally divided into two groups: eight individuals performed the numerical modality (Level A) first, while the other eight began with the spatial-colour feedback (Level B). This distribution ensures that any observed improvements in runtime or accuracy are attributable to the feedback modality itself, rather than a learning effect from tracing the same pattern \cite{chiang2015experimental}.
+
+The study was divided by gender and treated as a covariant because studies claim that fine motor task performance depends on age and test conditions, with Males between the age of 12 and 17 outperforming Females in fine motor tasks, although there is a weak significance to confirm this \cite{gender}.
+
+The $N=32$ sample was taken to satisfy both the theoretical and structural requirements of the experimental design. A sample size exceeding the $N > 30$ threshold was necessary to use Central Limit Theorem (CLT) and assume normality across the entire population, thus strengthening the validity of the parametric inferential statistical analysis \cite{ganti2024clt}, while allowing for an equitable distribution of 8 Males and Females performing Level A or B feedback first.
+
+A participation form was given to all individuals to assess any covariants and diagnose that can hinder their performance (ex. fine motor issues, colourblindness). This survey is available in Appendix A. 
+
+While UofT EngSci's were chosen for accessibility, they cannot replicate the experience of a surgeon, prompting selection bias. Thus, playing video games became a covariant as it best improves cognitive training and hand-eye coordination, simulating the skills of surgeons\cite{rehab}, while being an accessible fine motor task for most engineering students. Time covariates are ignored as accuracy was prioritized. However, a limitation is the uneven split in the amount of time participants spent gaming, where 17 participants spent ~0 hours/day, while 15 participants spent between 1-4 hours/day (>0 hours/day). 
+
+The survey used objective questions to limit speculation. However, factors like the number of hours of gaming can fluctuate throughout a semester. 
+
+\subsection{Experimental Apparatus}
+\vspace{-5pt}
+Appendix B provides a script that was used to convey the same information to each participant. Each test was conducted in a quiet area by participants during their booked time slot. They were asked if they preferred Mac or Windows due to the dexterity one may face when operating a different type of laptop. Both devices were 12 inches long\cite{apple,lenovo}, had a trackpad sensitivity and cursor speed of 5, maximum brightness and had the test maximized. Users were prohibited from zooming in or using a touchscreen. Figure \ref{fig:sample curve} is the tested curve for all participants for both modalities. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{curve_test.png}
+    \caption{The tested curve presented on the UI.}
+    \label{fig:sample curve}
+    \vspace{-10pt}
+\end{figure}
+The curve in Figure 1, and found on \href{https://github.com/snowxzf/MIE_Project/blob/main/index.html}{Github} combines common incision geometries, like midline, coronal, and transverse incisions\cite{incision} to simulate different surgeries. As re-incisions are prevalent, where in 66\% surgeries, doctors reoperate on the initial incision to minimize the amount of scarred skin, they must be proficient with repetitive pattern tracing\cite{reoperate}. This encouraged our curve to have repetitive patterns. The same curve was tested for both feedback modes to maintain the 'complexity' of the curve. 
+
+All participant data were downloaded as a .csv file and compiled into \verb|trial\_metrics\_summary.csv| and \verb|participant\_order.csv|. After each trial, participants were asked questions, found in Appendix A, about their opinions on both modalities and if they experienced a learning curve from subsequent trials.
+
+\subsection{Experimental Task \& Procedure}
+\vspace{-5pt}
+Participants were given four practice trials of randomly generated curves without feedback\cite{trials} to become familiar with test performance, difficulty and navigation. However, they were not required to use all their practice trials if they felt ready. To increase comfort, the user could trace the curve without having to constantly press down on the trackpad.
+
+All users were told they were being timed with a stopwatch for both assessments, but were hiding it to encourage them to focus on accuracy.
+
+Appendix C shows how the UI provides feedback for each modality. Instructions for how the UI communicated feedback were both written on the top of the test box and verbally communicated from the script. In the numerical test, a decimal number following the cursor would alert the user on how many pixels they deviated. The goal was to stay as close to 0.0 for accuracy. Meanwhile, the spatial-gradient modality had a constant light green background to indicate "closeness" to the curve. The gradient changed every 2.5 pixels to ensure it was sensitive enough for small deviations while not being distracting, as is the case for 1 to 2 pixel deviations\cite{gradiant}. It progresses from green to red the farther one strays from the line.  
+ 
+
+
+%--------------------------------------------------------------------------------------------------
+\section{Analyses} 
+This section plans to use t-distribution, T-tests, Pearson correlation, sensitivity analysis, normality and inferential statistics to test our hypotheses. \vspace{-10pt}
+\subsection{Hypotheses}
+This study aims to test the following 4 hypotheses.
+
+\textbf{Hypothesis 1} (speed-accuracy trade-off): There will be a negative correlation between runtime and accuracy due to the Speed-Accuracy tradeoff, for both feedback modalities. As the participant attempts to finish the test faster (speed), they will likely move hastily, sacrificing their accuracy. Note that a highly positive correlation indicates that increased runtime would lead to a higher area between the drawn and generated curves, and thus that the participants had lower accuracy the more time they spent. Consequently, a negative correlation is preferred. This is written more in depth in Section \ref{speedacc}. 
+
+Using the Cognitive Load Theory\cite{castroalonso_2019_the}, numerical values require more mental resources to understand, but they also provide a more specific and quantifiable metric compared to the spatial gradient. Therefore, the following two hypotheses were created:
+\begin{itemize}
+    \item \textbf{Hypothesis 2.1}: Spatial feedback will take less time to finish than numerical feedback. 
+    \item \textbf{Hypothesis 2.2}: Numerical feedback will yield higher accuracy than spatial-colour feedback. 
+\end{itemize}
+
+\textbf{Hypothesis 3} (male vs. female performance): Using the evidence in Section \ref{people}, male participants will outperform female participants overall. This hypothesis assesses the gender covariant in the study. 
+
+Video games provide sufficient cognitive training to improve hand-eye coordination \cite{videogames}  through colour-feedback, allowing them to prioritize accuracy regardless of time. This thus makes it a covariate for this study. There are two hypotheses on the results of gamers vs. non-gamers below:
+\begin{itemize}
+    \item \textbf{Hypothesis 4.1}: Participants who spend more time playing video games will have a high accuracy independent of any time-accuracy tradeoff, especially with spatial feedback. 
+    \item \textbf{Hypothesis 4.2}: Participants who play more video games will have shorter response times in both modalities, as they are more used to completing fine-motor tasks.
+\end{itemize}
+
+For \textbf{Hypothesis 3 and 4.1/4.2}, to assess the magnitude and direction of potential variables that impact cognitive training, we found the correlation between the runtime-accuracy ratio for Females and compared it to that of Males for both feedback modalities. Similarly, we assessed the correlation between individuals who played video games and those who did not.
+
+The null hypothesis for testing these assumptions is that there is no correlation between any independent and dependent variables. 
+
+\subsection{Normality Assumption Checks}
+%Mention R/R Studio, Shapiro-Wilk, KS test, and the "by inspection" QQ plots
+All data was analyzed using R, and is found in Appendix F. Normality tests were conducted using:
+\begin{itemize}
+    \item Shapiro-Wilk ($W$)for a strict statistical test of Gaussian distribution \cite{shapiro} (Appendix F.1). 
+    \item Quantile-quantile plots for a qualitative visualization of tail deviations \cite{qq} (Appendix F.2). 
+\end{itemize}
+A QQ plot visually depicted the graphical normality in the different categories, whereas $W$ quantitatively reinforced the normality using analytical approaches. The $W$ test is the most reliable because it is used for sample sizes $N < 50$ \cite{normality,sp50}.
+
+\subsection{Use of T Distributions}
+A one-tailed paired test was used for the primary modality hypotheses because \textbf{Hypothesis 2.1} and \textbf{Hypothesis 2.2} are directional. Specifically, for completion time we tested whether numerical minus spatial-colour was greater than zero (\textit{spatial-colour faster}), and for area off target we tested whether numerical minus spatial-colour was less than zero (\textit{numerical more accurate}).
+
+A t-distribution is valid for small sample sizes, ideally $N < 30$, although it can be used for $N \geq 30 $ because we had unknown population standard deviations \cite{jmp2026tdist}. Thus, the t-distribution was used to extrapolate the population mean and confidence interval \cite{tdist}. Using the standard $\alpha = 0.05$ significance interval, if the one-tailed p-value was equal to or less than $\alpha$, then the null hypothesis was rejected in the prespecified direction. The code for the directional one-tailed test can be found in Appendix F.3. 
+
+Calculations for mean and standard deviation code can be found in Appendix F.7. For comparisons of mean completion time (s) and mean area off target between independent groups---specifically,  Females versus Males(\textbf{Hypothesis 3}), and participants below versus above the sample median of self-reported gaming hours per day (\textbf{Hypothesis 4.1/4.2})---we used Welch's two-sample $t$-test rather than Student's classical two-sample $t$-test. The code for Welch's t-test can be found in Appendix F.4. 
+The Welch procedure tests the same null hypothesis (equality of population means) but does not assume equal variances between groups; it uses the separate sample variances and adjusts the degrees of freedom (often non-integer) to account for heteroscedasticity \cite{delacre2022correction}.
+This choice is standard when group sizes or spread may differ, which is plausible for self-report and performance subgroups.
+ 
+\subsection{Assessing the Speed-Accuracy Tradeoff} \label{speedacc}
+The code for calculating the Pearson's coefficient can be found in Appendix F.5. We use Pearson's $r$ to summarize the linear association between runtime and accuracy (and between $\Delta$ time and $\Delta$ area) on the same participants. It ranges from $-1$ to $+1$ and is scale-free \cite{rays2024correlation}. \textbf{Hypothesis~1} is framed as a linear speed--accuracy relationship, so Pearson is appropriate. Other quantities like Spearman rank correlation would stress monotonicity rather than linearity \cite{laerd2018spearman}. A negative $r$ between time and area off target indicates that slower trials tend to be more accurate. Inference assumes roughly bivariate normality; where subgroup normality is borderline, we treat $r$ as descriptive support alongside scatter plots and QQ checks, not as a strict distributional proof.
+
+\begin{comment}
+\subsection{Assessing a Learning Curve}
+To assess whether individuals truly experienced a learning curve \cite{learningcurve}, the mean time per task for individuals who first completed one modality was calculated and compared with the mean time per task for individuals who took the same modality second. The data was plotted based on the differences in mean time to task completion, where the closer the mean time per task was to zero, the less likely the individuals were to exhibit a learning curve. A positive difference between individuals would indicate that they were likely to exhibit a learning curve, whereas a negative value could mean that the individual may have become bored, tired or impatient with each subsequent trial. We hypothesize that individuals will have experienced a large learning curve from spatial-gradient to numerical because they have the strategies on how to be as close to the target line as possible, and the curve itself is sinusoidal and repeats itself. Performing numerical seconds should provide practice from learning the curve while also potentially causing more accuracy because of the instant metric feedback, which would align with \textbf{Hypothesis 2.1}. However, it is unlikely that the learning curve from performing numerical first and spatial-colour second will be proportional to the spatial-colour first numerical second category, as the individual could find that the spatial colour may not be as specific, prompting them to use intuition. 
+\end{comment}
+\subsection{Conducting a Sensitivity Analysis} \label{analysis}
+
+A sensitivity analysis allows us to understand how different independent variables and data points influence the dependent variable and overall data analysis, making them useful for determining outliers and deepening our understanding of the influence of independent variables by making assumptions \cite{sensitive}. 
+
+Data cleaning followed a protocol where outliers were defined using a conservative criterion of $|Z-score| > 3$ for standard deviations or values exceeding $1.5 \times \text{IQR}$. This threshold ensured that the sensitivity analysis excludes only extreme technical anomalies, thereby preserving the integrity of the core dataset for hypothesis testing \cite{frost2019five}. We compared performance with and without outliers to verify the robustness of our findings. The above analysis (z-score and IQR) was implemented in our code and can be seen in Appendix F.6. 
+
+\section{Results}
+This section outlines assumptions in determining normality, if the data aligns with the hypotheses, and an assessment of covariances. Table \ref{tab:sensitivity_results} gives a comprehensive summary of the primary inferential statistics, including mean, standard deviation, paired t-test outcomes and Pearson correlation coefficients for both the full ($N=32$) and filtered ($N=28$) datasets. All data is reported to three significant figures\cite{guelph}
+
+\begin{table*}[!t] % The * makes it span both columns
+\centering
+\caption{Full ($N=32$) vs.\ outlier-excluded ($N=28$). Descriptive rows are mean (SD) across participants in each feedback mode. Paired differences are numerical minus spatial-colour (Level~A $-$ Level~B): a positive time difference means slower completion under numerical feedback; a positive area difference means larger area off target under numerical feedback (worse accuracy).}
+\footnotesize
+\label{tab:sensitivity_results}
+\begin{tabularx}{\textwidth}{@{}l X X @{}}
+\toprule
+\textbf{Metric} & \textbf{Full ($N=32$)} & \textbf{Filtered ($N=28$)} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Descriptive means (SD)}} \\
+Time, numerical (s) & $85.50$ ($38.80$) & $82.80$ ($34.20$) \\
+Area, numerical (px$^2$) & $3060$ ($874$) & $3100$ ($871$) \\
+Time, spatial-colour (s) & $76.9$ ($30.6$) & $74.6$ ($27.6$) \\
+Area, spatial-colour (px$^2$) & $3030$ ($882$) & $2980$ ($675$) \\
+\addlinespace
+\multicolumn{3}{@{}l}{\emph{Paired $t$-tests on mean participant difference (A\ $-$ B)}} \\
+Time mean diff.\ (s) & $8.55$ ($p = 0.029$) & $\mathbf{8.14}$ ($\mathbf{p = 0.017^*}$) \\
+Area mean diff.\ (px$^2$) & $27.90$ ($p = 0.601$) & $124$ ($p = 0.905$) \\
+\addlinespace
+\multicolumn{3}{@{}l}{\emph{Pearson correlation ($r$)}} \\
+Num.\ (time vs.\ area) & $r = -0.747$ ($p < 0.001$) & $r = -0.785$ ($p < 0.001$) \\
+Spatial (time vs.\ area) & $r = -0.718$ ($p < 0.001$) & $r = -0.734$ ($p < 0.001$) \\
+$\Delta$Time vs.\ $\Delta$Area & $r = -0.520$ ($p = 0.002$) & $r = -0.694$ ($p < 0.001$) \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\begin{flushleft}
+\small \textit{$^*$One-tailed paired $t$-test (direction: numerical $>$ spatial-colour for time) significant at $\alpha = 0.05$.}
+\end{flushleft}
+\vspace{-10pt}
+\end{table*}
+
+
+\subsection{Normality Assumption Checks}
+Figure \ref{fig: qqplot} in Appendix D shows a quantile-quantile (QQ) plot of the data for Level A and B feedback for each variable (time and accuracy). Qualitatively, the data follows the linear trend of the red line, with minor standard deviations, showing normality. The R code for the QQ plots is detailed in Appendix F.2. 
+
+To quantify this normality, Table \ref{tab:sw-general} in Appendix D outlines the Shapiro-Wilk statistics ($W$). As the $W$ values are close to 1, they point towards normality in the data \cite{kaggle2024shapiro}. Numerical runtime and spatial-colour accuracy showed formal non-normality via the Shapiro-Wilk test ($p < 0.05$). However, because this test can be overly sensitive to minor outliers in moderate samples, a triangulated approach was used \cite{frost2019five}. Visual inspection of the QQ plots revealed a major linear trend, suggesting the data are sufficiently normal for parametric analysis. Consequently, we maintained the normality assumption for the t-tests, though we acknowledge these specific metrics represent a potential limitation in the inferential model. 
+
+% Mention Shapiro-Wilk and KS tests here. 
+% Explicitly state: "By inspection of the QQ plots (Appendix D), data appeared normal enough with slight deviations."
+
+\subsection{Feedback Modality Testing}
+% Include T-test results for Runtime and Accuracy here.
+% Mention the Sensitivity Analysis: "A sensitivity analysis was performed by evaluating results with and without outliers; [describe if it changed the p-value]."
+Figure \ref{fig:feedbackboxplot} provides a box plot analyzing how completion time changed by feedback type. As seen quantitatively in Table \ref{tab:sensitivity_results}, participants were slower with numerical feedback than spatial-colour by about 8.55 s on average, aligning with \textbf{Hypothesis 2.1}. Under the directional one-tailed paired test for time (\( \mu_{\text{numerical} - \text{spatial}} > 0 \)), the p-value was 0.029, below $\alpha = 0.05$, so \textbf{Hypothesis 2.1} was supported.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{r_feedback_duration_boxplot.png}
+    \caption{Box Plot for Completion time based on numerical (purple) and spatial-colour (green) feedback. Qualitatively, there is less variance in time among participants in spatial-gradiant than in numerical.}
+    \label{fig:feedbackboxplot}
+\end{figure}
+
+
+Figure \ref{fig:areaboxplot} shows a box plot between numerical and spatial colour for accuracy, measured by area off of the target curve.  
+
+From Table \ref{tab:sensitivity_results}, the area off target was larger in numerical than spatial-colour by 27.9 $px^2$, opposite to \textbf{Hypothesis 2.2}. Under the directional one-tailed paired test for accuracy (\( \mu_{\text{numerical} - \text{spatial}} < 0 \)), the p-value was 0.601, which is greater than $\alpha = 0.05$; therefore, \textbf{Hypothesis 2.2} was rejected.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{r_feedback_area_boxplot.png}
+    \caption{Box Plot for performance accuracy, measured by the amount of deviation the individual had from the target curve. The lower the score, the better. Both modes had similar variability and accuracy scores, even though spatial-colour provided better accuracy, disproving \textbf{Hypothesis 2.2}.}
+    \label{fig:areaboxplot}
+\end{figure}
+
+The qualitative survey results (Figure \ref{fig:qualrep} in Appendix G) provide a cognitive basis for the observed quantitative trends. While numerical feedback was intended to provide high-precision metrics, 50\% of participants ($N=16$) categorized it as "Distracting" or "Stressful," often noting that the rapid decimal changes forced a transition from intuitive tracing to deliberate focal attention. This increased cognitive load likely accounts for the higher variance and slower runtimes observed in the numerical trials. In contrast, 59\% of participants ($N=19$) explicitly preferred the spatial-colour modality, describing the light-green gradient as "calming" and "intuitive." This aligns with the theory of pre-attentive processing; by allowing users to monitor error via peripheral vision, the spatial-colour mode minimized "in-attentional blindness" and facilitated a smoother motor "flow." Additionally, the 69\% perceived learning rate ($N=22$) confirms that despite counterbalancing, the majority of participants successfully internalized the sinusoidal pattern, highlighting the role of habituation in repetitive surgical tasks.
+
+\subsection{Correlation for Speed-Accuracy Trade-off}
+%Discuss the $r = -0.7$ findings
+The correlation between runtime and accuracy for both feedback modalities were negative with low p-values as seen in Table \ref{tab:sensitivity_results}. The magnitude of these coefficients—ranging from $r = -0.72$ to $-0.80$ across all subgroups—indicates a strong linear relationship between speed and accuracy. This confirms \textbf{Hypothesis 1}, where participants, regardless of modality, consistently modulated their pace to maintain precision, a hallmark of the Speed-Accuracy Trade-off.
+
+%%Correlation between numerical−spatial time and numerical−spatial $area: r = -0.520 (p = 0.0023).$
+
+
+\subsection{Outlier Testing \& Sensitivity Analysis}
+Upon screening the data for outliers, as mentioned in Section \ref{analysis}, we identified four participants as outliers due to extreme deviations in completion time or area error that likely reflected technical hesitation rather than modality effects. 
+
+To confirm our findings, a sensitivity analysis was conducted by comparing results from the full dataset ($N=32$) against the filtered dataset ($N=28$) \cite{dave2024outliers}. The normality of the outliers was assessed in Table \ref{tab:sw-no-outliers} in Appendix D, which shows that while the score for normality improved for numerical accuracy compared to the full sample, there is still a $p<0.05$ for spatial-colour runtime. However, the QQ plots (Figure \ref{fig: qqoutlierplot} in Appendix D), imply normality, they will be cautiously used for smaller sample sizes. This p-value may be due to a natural limit in human motor precision, where individuals cannot significantly improve accuracy beyond a certain threshold regardless of feedback type \cite{berard2011limits}. 
+
+As seen in Table \ref{tab:sensitivity_results}, omitting these outliers shifted the one-tailed paired test p-value for completion time from $0.029$ to $0.017$, strengthening the evidence for a speed advantage with spatial-colour feedback. For accuracy, the one-tailed p-value increased from $0.601$ to $0.905$, remaining non-significant and opposite to the hypothesized direction. This suggests that the speed advantage of sensory-spatial feedback is robust once extreme technical variances are controlled, whereas the directional numerical-accuracy hypothesis is not supported in this sample.
+
+The correlation analysis remains consistent across both the full and filtered datasets, confirming a strong inverse relationship between runtime and area error as stated in \textbf{Hypothesis 1}. Notably, the correlation between the difference in time and the difference in area error strengthened from $r = -0.520$ to $r = -0.694$ ($p < 0.001$) after outlier removal, re-enforcing a consistent trade-off.
+
+\subsection{Exploratory Demographic Analysis}
+\subsubsection{Impact of Gender on Performance} 
+Figure \ref{fig:gender} in Appendix E provides a box plot that compares the performance of Males and  Females in terms of speed and accuracy. QQ plots for this sample (Figure \ref{fig:qqgender} in Appendix E) show mostly normal distribution, with full $W$ values (in Table \ref{tab:sw-gender}, Appendix E), spatial-color for  Females should be taken cautiously as it showed a significant departure from normality. Descriptive statistics are summarized in Table~\ref{tab:gender_desc}. On average, both groups were faster with spatial-colour than with numerical feedback. Mean times and areas were similar across genders within each mode.
+
+To test whether mean performance differed between genders (independent groups), we used Welch two-sample $t$-tests (Table~\ref{tab:gender_tests}, Appendix E). None of the comparisons reached statistical significance at $\alpha = .05$, so we did not find evidence that Males and  Females differed in mean time or mean accuracy for either feedback type, nor in the participant-level paired differences (numerical $-$ spatial) for time or area, therefore we reject \textbf{Hypothesis 3}. 
+
+\begin{table}[H]
+  \centering
+  \small % Slightly smaller font often helps tables look more "scientific" and less bulky
+  \caption{Mean completion time (s) and mean area off target (px$^2$) by gender ($N=16$ both) and feedback type. Results are formatted as: $mean$ ($standard$ $deviation$)} 
+  \label{tab:gender_desc}
+  \begin{tabular}{llcc}
+    \toprule
+    \textbf{Gender} & \textbf{Level} & \textbf{Time} & \textbf{Area off target} \\
+    & & (s) & (px$^2$) \\
+    \midrule
+     Females & A      & 86.9 (38.1) & 3010 (731) \\
+          & B & 79.2 (33.2) & 3040 (981) \\
+    \addlinespace
+   Males  & A      & 84.1 (40.7) & 3100 (1020) \\
+          & B & 74.6 (28.7) & 3010 (803) \\
+    \bottomrule
+  \end{tabular}
+  \vspace{-10pt}
+\end{table}
+
+As well, there was a strong negative Pearson correlation between completion time and accuracy for both genders and modalities. Table \ref{tab:correlation_results} showcases the Pearson correlation for  Females and Males in both feedback types. This consistent negative relationship indicates that both Males and Females exhibited a similar speed-accuracy trade-off, as shown in the analysis above, thereby matching \textbf{Hypothesis 1}. 
+
+Overall, these results suggest no correlation between gender and performance, as both groups show similar trends in time and accuracy. 
+\vspace{-10pt}
+
+\begin{table}[H]
+\centering
+\small 
+\setlength{\tabcolsep}{6pt} % Slightly wider for a cleaner EngSci look
+\caption{Pearson correlation coefficients ($r$) with their corresponding $p$ value (all within $\alpha = 0.05$ by feedback type (Level A and B) and group (male and female)}
+\label{tab:correlation_results}
+\begin{tabularx}{\columnwidth}{@{}XXcc@{}}
+    \toprule
+    Group & Level & $r$ & $p$ \\
+    \midrule
+    Females & A      & $-0.80$ & $<.001$ \\
+                  & B & $-0.67$ & $.004$ \\
+    Males   & A     & $-0.72$ & $.002$ \\
+                  & B & $-0.79$ & $<.001$ \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsubsection{Impact of Gaming Experience}
+Figure~\ref{fig:gaming} in Appendix E compares participants below vs.\ above the sample median of self-reported gaming hours per day (approximately 0 vs.\ $>0$~h/day). QQ plots for this sample (Figure \ref{fig:qqgaming} in Appendix E) show mostly normal distribution, with full $W$ values (in Table \ref{tab:sw-gaming}, Appendix E) though spatial-color accuracy for 0h/day and spatial-color runtime for >0h/day should be taken cautiously. Descriptive statistics are in Table~\ref{tab:gaming_desc}.
+
+\begin{table}[H]
+  \centering
+  \caption{Mean completion time (s) and mean area off target (px$^2$) by gaming group and feedback type. $N = 17$ for $\sim$0~h/day; $N = 15$ for $>0$~h/day per mode. Results are formatted as: $mean$ ($standard$ $deviation$)}
+  \footnotesize
+  \label{tab:gaming_desc}
+  \begin{tabularx}{\columnwidth}{@{}llcc@{}}
+    \toprule
+    Group & Level & Time (s) & Area off target (px$^2$) \\
+    \midrule
+    $\sim$0 h/day & A      & 86.9 (35.0) & 2840 (732) \\
+                  & B & 83.4 (31.3) & 2880 (1010) \\
+    $>$0 h/day    & A     & 85.5 (45.1) & 3300 (1010) \\
+                  & B & 70.3 (30.0) & 3220 (730) \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Both groups were faster on average with spatial-colour than numerical feedback. This may be due to the heavy usage of color in several games to give feedback to the gamer in their in-game performance, matching \textbf{Hypothesis 4.1} as participants who gamed completed the test much faster with spatial feedback compared to numerical feedback. 
+
+However, Welch $t$-tests (Table~\ref{tab:gaming_welch}, Appendix E) did not show statistically significant differences between gaming groups in mean time or mean area for either feedback type, nor in the participant-level paired differences (all $p > .15$). Thus we cannot claim a reliable between-group advantage tied to gaming hours on these tests, and reject \textbf{Hypothesis 4.1}. 
+
+Pearson correlations between time and area remained strongly negative within each gaming group and feedback type (Table~\ref{tab:gaming_pearson}), again aligning with \textbf{Hypothesis~1} (a consistent negative linear association).
+
+\begin{table}[H]
+  \centering
+  \caption{Pearson correlation coefficients ($r$) with their corresponding $p$ value (all within $\alpha = 0.05$ by feedback type (Level A and B) and group (gaming time)}
+  \label{tab:gaming_pearson}
+  \footnotesize % Slightly reduces font size to prevent margin bleed
+  \begin{tabular}{llccc}
+    \toprule
+    Group & Level & $r$ & $p$ \\
+    \midrule
+    $\sim$0 h/day & A      & $-0.737$ & .0007 \\
+                  & B & $-0.706$ & .002 \\ \addlinespace
+    $>$0 h/day    & A      & $-0.790$ & .0008  \\
+                  & B & $-0.739$ & .002 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{-10pt}
+\end{table}
+
+
+
+\section{Conclusion}
+This study compared symbolic numerical and sensory-spatial visual feedback to identify the optimal modality for high-precision compensatory tracking in remote surgery. Our results confirm a fundamental \textbf{speed-accuracy trade-off (Hypothesis 1)}, where participants across all demographics modulated their pace to maintain precision ($r \approx -0.750$). 
+
+While the theoretical precision of numerical feedback (Level A) was hypothesized to improve accuracy, this was rejected (\textbf{Hypothesis 2.2}, one-tailed $p = 0.601$ in the full sample; $p = 0.905$ after outlier exclusion); instead, participants reported significant cognitive overload when decoding symbolic data. Conversely, sensory-spatial feedback (Level B) demonstrated a robust speed advantage in both the full sample and sensitivity analysis (\textbf{Hypothesis 2.1}, one-tailed $p = 0.029$ for $N=32$; $p = 0.017$ for $N=28$). Furthermore, exploratory analyses rejected gender and gaming experience as significant performance determinants (\textbf{Hypotheses 3, 4.1, and 4.2}), suggesting that the advantages of spatial cues are largely universal and independent of prior fine-motor training.
+
+These findings have direct implications for the design of RAMIS interfaces. For real-time tasks like catheter navigation or laser ablation, sensory-spatial cues should be prioritized as they are processed \textbf{pre-attentively}. This allows surgeons to utilize peripheral vision for depth monitoring without diverting focal attention from the surgical site, reducing corrective lag time and enhancing patient safety \cite{bethea2004haptic}.
+
+Future research should transition from the "pattern memorization" observed with sinusoidal paths to more ecologically valid, stochastic trajectories that replicate complex surgical incisions. A longitudinal, multimodal approach—integrating spatial-colour cues with redundant haptic feedback—could further delineate the transition from the cognitive to the autonomous learning stage. By controlling for hardware-specific variables like trackpad resolution and operator posture, subsequent iterations will provide a more granular optimization of the human-machine interface in robotic surgery.
+\end{multicols}
+\newpage
+\onecolumn
+\bibliographystyle{ieeetr}
+\bibliography{ref}
+\newpage
+\section{Appendices}
+\subsection{Appendix A: Participant Form \& Post-Test Survey}
+A link to the participant form can be found below: \url {https://docs.google.com/forms/d/e/1FAIpQLSczcxdmgbi-U4Tf8FJvPboxo4EsSjBMCKZdqCypZ1tPXRsehg/viewform?usp=header}
+
+A link to the post-test survey questions that were asked to all participants immediately after their completion of the test: \url {https://docs.google.com/document/d/1ufc6iUMie3V6-SwcyP_nKV-Rvkxq9UYIJZ_CrklxQqg/edit?usp=sharing}
+
+\subsection{Appendix B: Script}
+
+A link to the script that each participant was shown at the beginning of the test: \url {https://docs.google.com/document/d/1gJg4LpQOil-J3uRqdJ1OZoQ3zaqC-cKQMq9CqJJkGKc/edit?usp=sharing} Note that in between, starts and italicized text mark times when the test website was used.  
+
+\subsection{Appendix C: UI Appearance for Modalities}
+Below are some screenshots of key elements of our website used to conduct all the testing. Note that consistently throughout, the dark purple line represents the line the participant must trace with their cursor, while the dark green line shows the actual line the participant's cursor has made. 
+
+\begin{figure}[H]  
+    \centering
+    \includegraphics[width=1\linewidth]{generalui.png}
+    \caption{Screenshot of the website when user is initially beginning testing, prior to starting the actual line-tracing test. The curve is shown in dark purple.}
+    \label{fig: general_ui}
+\end{figure}
+
+\begin{figure}[H]  
+    \centering
+    \includegraphics[width=1\linewidth]{numerical_ui.png}
+    \caption{Screenshot of an in-progress numerical test, where the number of pixels the participant is away from the curve is shown in black next to their cursor. The line traced out by the participant can be seen in green. }
+    \label{fig: numerical_ui}
+\end{figure}
+
+\begin{figure}[H]  
+    \centering
+    \includegraphics[width=1\linewidth]{spatial_green.png}
+    \caption{Screenshot of an in-progress spatial test, where the background is currently green as the participant's cursor is extremely close to the line. The line the participant has traced using their cursor can be seen in dark green.}
+    \label{fig: spatial_green}
+\end{figure}
+
+\begin{figure}[H]  
+    \centering
+    \includegraphics[width=1\linewidth]{spatial_red.png}
+    \caption{Screenshot of an in-progress spatial test, where the background is currently red as the participant's cursor is far from the line as indicated by the dark green line. Note that the dark green line is the line the participant has traced using their cursor.}
+    \label{fig: spatial_red}
+\end{figure}
+
+\begin{figure}[H]  
+    \centering
+    \includegraphics[width=1\linewidth]{completed.png}
+    \caption{Screenshot of the completed test, with the dark green line indicating the line the participant's cursor has traced out, while the dark purple line is the line the participant had to trace. The download csv button can be seen, where data was downloaded and processed using code.}
+    \label{fig: completed_ui}
+\end{figure}
+
+\subsection{Appendix D: Normality Assumption Checks}
+Figure \ref{fig: qqplot} shows the quantile-quantile plot used to qualitatively assess normality in the sample.
+\begin{figure}[h]  
+    \centering
+    \includegraphics[width=1\linewidth]{r_check_qq_plots_2x2.png}
+    \caption{QQ-plots showcasing normality by condition and outcomes, where Conditions 1, 2, 3 and 4 are Numerical Area off target $px^2$, Numerical Runtime, Spatial-Colour Area off Target and Spatial-Colour Time, respectively.}
+    \label{fig: qqplot}
+\end{figure}
+
+Table \ref{tab:sw-general} shows the output parameters for the Shapiro-Wilk test for the entire $N=32$ dataset.
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Condition} & \textbf{$W$} & \textbf{$p$} \\ \hline
+Numerical Runtime & 0.927 & 0.033 \\ \hline
+Numerical Accuracy & 0.955 & 0.195 \\ \hline
+Spatial-colour Runtime & 0.938 & 0.065 \\ \hline
+Spatial-colour Accuracy & 0.894 & 0.004 \\ \hline
+\end{tabular}
+\caption{Shapiro--Wilk test on pooled outcomes ($N=32$ per cell).}
+\label{tab:sw-general}
+\end{table}
+
+Figure \ref{fig: qqoutlierplot} shows the quantile-quantile plot used to qualitatively assess normality in the outlier analysis.
+\begin{figure}[h]  
+    \centering
+    \includegraphics[width=0.8\linewidth]{qq_outliers_main_2x2.png}
+    \caption{QQ-plots showcasing normality for outliers by condition and outcomes, where Conditions 1, 2, 3 and 4 are Numerical Area off target $px^2$, Numerical Runtime, Spatial-Colour Area off Target and Spatial-Colour Time, respectively.}
+    \label{fig: qqoutlierplot}
+\end{figure}
+
+Table \ref{tab:sw-no-outliers} includes the Shapiro-Wilk values for the specificity (outlier analysis).
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Condition} & \textbf{$W$} & \textbf{$p$} \\ \hline
+Numerical Runtime & 0.956 & 0.284 \\ \hline
+Numerical Accuracy & 0.956 & 0.271 \\ \hline
+Spatial-colour Runtime & 0.924 & 0.043 \\ \hline
+Spatial-colour Accuracy & 0.970 & 0.580 \\ \hline
+\end{tabular}
+\caption{Shapiro-Wilk after excluding outliers (restricted sample, $N=28$).}
+\label{tab:sw-no-outliers}
+\end{table}
+
+\subsection{Appendix E: Covariate Figures and Tables}
+\subsubsection{Gender Covariate}
+The QQ plot for gender is shown in Figure \ref{fig:qqgender}. All lines are approximately normal, and by inspection are linear.
+\begin{figure}[H]
+    \centering
+\includegraphics[width=0.5\linewidth]{r_check_qq_by_gender.png}
+    \caption{Quantile-quantile plot for performance per gender on speed and accuracy for each modality.}
+    \label{fig:qqgender}
+\end{figure}
+
+The Shapiro-Wilk results for gender is shown in Figure \ref{tab:sw-gender}. 
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Group} & \textbf{Condition} & \textbf{$W$} & \textbf{$p$} \\ \hline
+\multirow{4}{*}{ Females} & Numerical Runtime & 0.933 & 0.271 \\ \cline{2-4}
+ & Numerical Accuracy & 0.960 & 0.655 \\ \cline{2-4}
+ & Spatial-colour Runtime & 0.934 & 0.285 \\ \cline{2-4}
+ & Spatial-colour Accuracy & 0.779 & 0.001 \\ \hline
+\multirow{4}{*}{Men} & Numerical Runtime & 0.921 & 0.173 \\ \cline{2-4}
+ & Numerical Accuracy & 0.930 & 0.248 \\ \cline{2-4}
+ & Spatial-colour Runtime & 0.913 & 0.129 \\ \cline{2-4}
+ & Spatial-colour Accuracy & 0.949 & 0.467 \\ \hline
+\end{tabular}
+\caption{Shapiro--Wilk by gender and feedback mode ($N=16$ per group per stratum).}
+\label{tab:sw-gender}
+\end{table}
+
+Figure \ref{fig:gender} shows the box plot for test completion time and accuracy per gender.
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{gender.png}
+    \caption{Box Plots for test completion time in seconds (top) and performance accuracy using the area of pixels off target line (bottom), split by gender.}
+    \label{fig:gender}
+\end{figure}
+
+Table \ref{tab:gender_tests} shows the results from the $t$ test done per gender, and the outcomes for accuracy and time for both modalities.
+\begin{table}[H]
+\centering
+\caption{Welch two-sample $t$-tests for gender ( Females vs. men). $H_0$: equal means. Two-sided $p$-values.}
+\label{tab:gender_tests}
+\begin{tabular}{l cc} % No '|' symbols here
+\toprule
+\textbf{Outcome (subset)} & \textbf{$t$ (df)} & \textbf{$p$} \\ \midrule
+Time, numerical (A)         & $0.20$ ($29.9$)   & $.842$ \\
+Time, spatial-colour (B)    & $0.42$ ($29.4$)   & $.678$ \\
+Area, numerical           & $-0.27$ ($27.2$)  & $.787$ \\
+Area, spatial-colour      & $0.09$ ($28.9$)   & $.930$ \\ \addlinespace
+Paired diff. time (A. $-$ B) & $-0.20$ ($25.2$)  & $.841$ \\
+Paired diff. area (A. $-$ B.) & $-0.52$ ($29.2$)  & $.609$ \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Gaming Covariate}
+The QQ plot for gaming is shown in Figure \ref{fig:qqgaming}. All lines are approximately normal, and by inspection are linear.
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{r_check_qq_by_gaming.png}
+    \caption{Quantile-quantile plot for performance based on people who game for more than 0 hours and those above 0 hours on speed and accuracy for each modality.}
+    \label{fig:qqgaming}
+\end{figure}
+
+The Shapiro-Wilk results for gender is shown in Figure \ref{tab:sw-gaming}.
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Group} & \textbf{Condition} & \textbf{$W$} & \textbf{$p$} \\ \hline
+\multirow{4}{*}{$\sim$0 h/day} & Numerical Runtime & 0.951 & 0.474 \\ \cline{2-4}
+ & Numerical Accuracy & 0.929 & 0.206 \\ \cline{2-4}
+ & Spatial-colour Runtime & 0.974 & 0.889 \\ \cline{2-4}
+ & Spatial-colour Accuracy & 0.778 & 0.001 \\ \hline
+\multirow{4}{*}{$>$0 h/day} & Numerical Runtime & 0.892 & 0.086 \\ \cline{2-4}
+ & Numerical Accuracy & 0.967 & 0.827 \\ \cline{2-4}
+ & Spatial-colour Runtime & 0.863 & 0.034 \\ \cline{2-4}
+ & Spatial-colour Accuracy & 0.969 & 0.864 \\ \hline
+\end{tabular}
+\caption{Shapiro--Wilk by gaming-time split and feedback mode.}
+\label{tab:sw-gaming}
+\end{table}
+
+Figure \ref{fig:gaming} shows the box plot for test completion time and accuracy for gaming.
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{gaming.png}
+    \caption{Box Plots for time taken to complete the test in seconds (top) and performance accuracy as measured by the area of pixels off target line (bottom), split by the amount of time participants spent gaming per day}
+    \label{fig:gaming}
+\end{figure}
+
+Table \ref{tab:gaming_welch} shows the results from the $t$ test done for gaming, and the outcomes for accuracy and time for both modalities.
+\begin{table}[H]
+  \centering
+  \caption{Welch two-sample $t$-tests for gaming groups. $H_0$: equal means. Two-sided $p$-values.}
+  \label{tab:gaming_welch}
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    Outcome (subset) & $t$ (df) & $p$ \\
+    \midrule
+    Time, numerical       & 0.09 (24.2)  & .927 \\
+    Time, spatial-colour  & 1.18 (28.3)  & .248 \\
+    Area, numerical       & $-1.43$ (23.1) & .166 \\
+    Area, spatial-colour  & $-1.10$ (28.6) & .279 \\
+    Paired diff.\ time (num.\ $-$ spa.)  & $-1.30$ (27.1) & .205 \\
+    Paired diff.\ area (num.\ $-$ spa.)  & $-0.53$ (29.0) & .603 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Appendix F: Key Code Snippets}
+Below are some of the code we used to analyze our data in R. 
+
+\subsubsection{Appendix F.2: Shapiro-Wilk (W) Code}
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=0.8\linewidth]{shapiro_code.png}
+    \caption{Example implementation of Shapiro-Wilk ($W$) calculations. This code can be found in mie286\_analysis\_pipeline.R}
+\end{figure}
+
+The object \verb|shapiro_by_group| stores normality test results for each condition-outcome group. Within \verb|group_modify()|, the Shapiro-Wilk test (\verb|stats::shapiro.test()|) was applied for groups where \verb|n| fell between 3 and 5000. The test returned a $W$ statistic and p-value, with \verb|NA| assigned where sample size requirements were not met.
+
+\subsubsection{Appendix F.2: Quantile-Quantile (QQ) Plots Code}
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{qq_plot_code.png}
+    \caption{Example implementation of QQ plot. This code can be found in mie286\_analysis\_pipeline.R}
+\end{figure}
+
+The object \verb|qq\_pts| stores the data used to construct the QQ plot by pairing sample values with their corresponding theoretical normal quantiles. For each group, the vector $v$ represents the sorted sample data after removing missing values while the variable $n$ denotes the number of observations in this vector. Theoretical quantiles were computed using \verb|stats::ppoints()| and then converted to standard normal quantiles using \verb|stats::qnorm()|. 
+
+\subsubsection{Appendix F.3: One-Tailed Test Code}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{tt_test_code.png}
+    \caption{Example implementation of one-tailed directional paired $t$-tests. This code can be found in mie286\_analysis\_pipeline.R}
+\end{figure}
+
+% Use \_ here to avoid the "Missing $" error
+
+Paired $t$-tests were conducted using \verb|t.test()| with \verb|paired = TRUE| and explicit directional alternatives. For runtime (\textbf{Hypothesis 2.1}), we used \verb|alternative = "greater"| on \verb|numerical - spatial-color| to test whether spatial-colour feedback is faster. For accuracy (\textbf{Hypothesis 2.2}), we used \verb|alternative = "less"| on \verb|numerical - spatial-color| to test whether numerical feedback is more accurate. Results were printed directly for each outcome.
+
+\subsubsection{Appendix F.4: Welch's t-test Code}
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{welch_test1.png}
+    \caption{Example implementation of Welch's t-test test calculation. This code can be found in mie286\_analysis\_pipeline.R}
+\end{figure}
+
+A Welch two-sample $t$-test was conducted using \verb|stats::t.test()| with \verb|var.equal = FALSE|, comparing group means using formula syntax (\verb|outcome ~ group|). Setting \verb|var.equal = FALSE| instructs R to use separate sample variances for each group and apply the Welch--Satterthwaite approximation to adjust the degrees of freedom, accounting for heteroscedasticity between groups. The specific outcome and grouping variables may differ across applications of this test.
+
+\subsubsection {Appendix F.5: Pearson's Coefficient Code}
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{pearson_code.png}
+    \caption{Example implementation of the Pearson's coefficient calculation. This code can be found in mie286\_analysis\_pipeline.R}
+\end{figure}
+
+A Pearson correlation coefficient was computed using \verb|cor.test()| with method = "pearson" to assess the linear relationship between two continuous variables, here \verb|duration_sec| and \verb|area_off_px2|. The specific variables and conditions may differ across applications of this test.
+
+\subsubsection {Appendix F.6: Z-Score and IQR Code}
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{z_score_code.png}
+    \caption{Implementation of Z-score outlier detection. This code can be found in mie286\_outlier\_rules.R}
+\end{figure}
+
+Outliers were flagged using a z-score function \verb|col_z_extreme()|, which computes the mean and standard deviation of a vector and flags any observation where the absolute z-score exceeds a threshold, defaulting to \verb|zmax = 3|. If the standard deviation is non-finite or near-zero, no observations are flagged to avoid division errors.
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{iqr_code.png}
+    \caption{Implementation of IQR outlier detection. This code can be found in mie286\_outlier\_rules.R}
+\end{figure}
+
+Outliers were also flagged using an IQR-based function \verb|col\_iqr\_extreme()|, which computes the 25th and 75th percentiles and flags any observation falling below Q1 - 1.5 × IQR or above Q3 + 1.5 × IQR, following the standard Tukey method. If the IQR is non-finite or zero, no observations are flagged.
+
+\subsubsection {Appendix F.7: Mean and Standard Deviation Code}
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{mean_std_code.png}
+    \caption{Example implementation of mean and standard deviation calculation by group. This code can be found in mie286\_analysis\_pipeline.R}
+\end{figure}
+
+For each condition-outcome group, observed values were stored as a vector v. The mean and standard deviation were computed directly on v using \verb|mean()| and \verb|stats::sd() |respectively. A near-zero or non-finite standard deviation is replaced with a small fallback value to avoid errors in downstream calculations.
+
+\subsection{Appendix G: Participant Post-Test Results to Questions}
+The results here refer to the questions asked in Appendix B after the test.
+
+Figure \ref{fig:qualrep} uses the participant feedback given after the test and quantifies them into distinct categories, being their modality preference, the common theme we saw in their numerical feedback comments, and if they did or did not learn the curve.
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=1\linewidth]{Qual_rep.png}
+    \caption{Three different plots are shown: the top right is a bar chart of the user preference per modality (spatial-color, numerical, no feedback, or no opinion), the top right is a pie chart comparing how many participants learned and did not learn the curve, and the bottom bar chart reflects the user's common sentiments on numerical feedback.}
+    \label{fig:qualrep}
+\end{figure}
+%----------------------------------------------------------------------------------
+\clearpage
+
+
+
+\end{document}
